@@ -1,7 +1,13 @@
 package main
 
-import _ "github.com/lib/pq"
+import (
+	"searcher/internal/app"
 
-func main(){
+	_ "github.com/lib/pq"
+)
 
+func main() {
+	if err := app.InitProject(); err != nil {
+		panic(err)
+	}
 }

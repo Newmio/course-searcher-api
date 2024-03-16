@@ -1,3 +1,7 @@
+github.com/Newmio/newm_helper v0.0.0-20240316111325-7314932b3447 h1:5tw36pAycU2DKwO+6tbTerhFxRlb1yu9P+4aNsWnU0o=
+github.com/Newmio/newm_helper v0.0.0-20240316111325-7314932b3447/go.mod h1:hBhCgptqNXbRQaSJKX4e/nwknX+MdByy6vmIWknI2/0=
+github.com/Newmio/newm_logger v0.0.0-20240316110126-fe8075c321f8 h1:LIF32ZN30sLvDsqS3eZXqdNzzf5kPMRC+G+8+COSNCk=
+github.com/Newmio/newm_logger v0.0.0-20240316110126-fe8075c321f8/go.mod h1:etbtV4KNJ2wFRCVtiVWi5H62zXn2YlYlST7pCQ699dA=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
 github.com/cespare/xxhash/v2 v2.1.2/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

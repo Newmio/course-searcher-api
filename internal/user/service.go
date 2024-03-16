@@ -1,13 +1,13 @@
 package user
 
-type IUserService interface {
+type IUserRepo interface {
 	
 }
 
 type userService struct {
-	r IPsqlUserRepo
+	r IUserRepo
 }
 
-func NewUserService(r IPsqlUserRepo) IUserService {
+func NewUserService(r IUserRepo) IUserService {
 	return &userService{r: r}
 }

@@ -4,6 +4,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type IUserService interface {
+	
+}
+
 type Handler struct {
 	s IUserService
 }
