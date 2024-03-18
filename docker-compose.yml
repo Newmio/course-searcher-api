@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "qwerty"]
+    environment:
+      - REDIS_PASSWORD=qwerty
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: qwerty
+    ports:
+      - "5432:5432"

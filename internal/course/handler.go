@@ -1,9 +1,12 @@
 package course
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/Newmio/newm_helper"
+	"github.com/labstack/echo/v4"
+)
 
 type ICourseService interface {
-	
+	GetLongCourses(searchValue string, inDescription bool) ([]Course, error)
 }
 
 type Handler struct {
@@ -15,17 +18,19 @@ func NewHandler(s ICourseService) *Handler {
 }
 
 func (h *Handler) InitCourseRoutes(e *echo.Echo) *echo.Echo {
-	course := e.Group("/course")
+
+	api := e.Group("/api")
 	{
-		api := course.Group("/api")
-		{
-			api.GET("search_course", h.SearchCourse)
-		}
+		//api.GET("/short_course", h.GetShortCourse)
+		api.GET("/long_course", h.GetLongCourse)
 	}
 
 	return e
 }
 
-func (h *Handler) SearchCourse(c echo.Context) error {
-	return nil
+func (h *Handler) GetLongCourse(c echo.Context) error {
+	
+	if c.QueryParam("searchValue") == "" {
+		return c.JSON(400, newm_helper.ErrorResponse("searchValue is required"))
+	}
 }

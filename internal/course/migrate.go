@@ -5,8 +5,12 @@ func (r *courseRepo) initTables() {
 		id serial primary key,
 		name text not null,
 		description text default '',
-		author text not null,
-		money int default 0,
+		language text default '',
+		author text default '',
+		duration text default '',
+		platform text not null,
+		money text default '',
+		link text not null
 	)`
 	_, err := r.psql.Exec(str)
 	if err != nil {

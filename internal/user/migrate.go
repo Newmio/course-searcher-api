@@ -10,7 +10,7 @@ func (r *psqlRepo) initTables() {
 		role text not null,
 		first_name text not null,
 		middle_name text,
-		last_name text not null,
+		last_name text not null
 	)`
 	_, err := r.psql.Exec(str)
 	if err != nil {
