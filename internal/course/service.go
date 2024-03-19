@@ -120,7 +120,7 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 					}
 				}
 
-				if strings.Contains(strings.ToLower(course.Description), strings.ToLower(searchValue)) {
+				if strings.Contains(strings.ToLower(course.Name), strings.ToLower(searchValue)) {
 					courses = append(courses, course)
 
 				} else if strings.Contains(strings.ToLower(course.Description), strings.ToLower(searchValue)) {
