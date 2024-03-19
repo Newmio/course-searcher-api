@@ -7,6 +7,7 @@ type Course struct {
 	Language    string `db:"language" json:"language" xml:"language"`
 	Author      string `db:"author" json:"author" xml:"author"`
 	Duration    string `db:"duration" json:"duration" xml:"duration"`
+	Rating      string `db:"rating" json:"rating" xml:"rating"`
 	Platform    string `db:"platform" json:"platform" xml:"platform"`
 	Money       string    `db:"money" json:"money" xml:"money"`
 	Link        string `db:"link" json:"link" xml:"link"`
@@ -30,8 +31,9 @@ var WebCourseParams = map[string]WebCourseParam{
 			"language":    "div.course-lang",
 			"author":      "div.course-lessons a",
 			"duration":    "div.course-duration",
+			"rating":      "div.course-rating-on<>data-text",
 			"money":       "div.course-status",
-			"link":        "div.course-details-bottom a",
+			"link":        "div.course-details-bottom a<>href",
 		},
 	},
 }

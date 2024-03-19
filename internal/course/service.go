@@ -10,7 +10,7 @@ import (
 )
 
 type ICourseRepo interface {
-	GetShortCourse(valueSearch string, inDescription bool) ([]Course, error)
+	GetShortCourse(valueSearch string) ([]Course, error)
 	GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error)
 }
 
@@ -22,20 +22,20 @@ func NewCourseService(r ICourseRepo) ICourseService {
 	return &courseService{r: r}
 }
 
-func (s *courseService) GetShortCourses(searchValue string, inDescription bool) ([]Course, error) {
-	return s.r.GetShortCourse(searchValue, inDescription)
+func (s *courseService) GetShortCourses(searchValue string) ([]Course, error) {
+	return s.r.GetShortCourse(searchValue)
 }
 
-func (s *courseService) GetLongCourses(searchValue string, inDescription bool) ([]Course, error) {
+func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 	var param newm_helper.Param
-	var coueses []Course
+	var courses []Course
 	fields := make(map[string]WebCourseParam)
 
 	for key, value := range WebCourseParams {
 		fields[key] = value
 	}
 
-	for _, value := range fields {
+	for key, value := range fields {
 
 		param.Body = nil
 		param.Method = "GET"
@@ -60,60 +60,79 @@ func (s *courseService) GetLongCourses(searchValue string, inDescription bool) (
 				return nil, newm_helper.Trace(err)
 			}
 
-			var names, descriptions, languages, authors, durations, moneys, links []string
 			element := doc.Find(value.MainField)
 
-			for key2, value2 := range value.Fields {
+			element.Each(func(i int, s *goquery.Selection) {
+				var course Course
 
-				element.Find(value2).Each(func(i int, s *goquery.Selection) {
+				for key2, value2 := range value.Fields {
+					var valuesInHtml []string
+					var selector, attr string
 
-					switch key2{
+					parts := strings.Split(value2, "<>")
+					if len(parts) == 1 {
+						selector = parts[0]
+						attr = ""
+					} else {
+						selector = parts[0]
+						attr = parts[1]
+					}
+
+					s.Find(selector).Each(func(i int, s *goquery.Selection) {
+
+						if attr != "" {
+							str, ok := s.Attr(attr)
+							if !ok {
+								str = fmt.Sprintf("%s not found", key2)
+							}
+
+							valuesInHtml = append(valuesInHtml, str)
+						} else {
+							valuesInHtml = append(valuesInHtml, strings.TrimSpace(strings.ReplaceAll(s.Text(), "\n", "")))
+						}
+					})
+
+					switch key2 {
 					case "name":
-						names = append(names, s.Text())
+						course.Name = strings.Join(valuesInHtml, ", ")
+						course.Platform = key
 
 					case "description":
-						descriptions = append(descriptions, s.Text())
+						course.Description = strings.Join(valuesInHtml, ", ")
 
 					case "language":
-						languages = append(languages, s.Text())
+						course.Language = strings.Join(valuesInHtml, ", ")
 
 					case "author":
-						authors = append(authors, s.Text())
+						course.Author = strings.Join(valuesInHtml, ", ")
 
 					case "duration":
-						durations = append(durations, s.Text())
+						course.Duration = strings.Join(valuesInHtml, ", ")
+
+					case "rating":
+						course.Rating = strings.Join(valuesInHtml, ", ")
 
 					case "money":
-						moneys = append(moneys, s.Text())
+						course.Money = strings.Join(valuesInHtml, ", ")
 
 					case "link":
-						link, ok := s.Attr("href")
-						if !ok {
-							link = "link not found"
-						}
-
-						links = append(links, link)
+						course.Link = strings.Join(valuesInHtml, ", ")
 					}
-				})
-			}
+				}
 
-			for i := 0; i < len(names); i++ {
-				coueses = append(coueses, Course{
-					Name:        names[i],
-					Description: descriptions[i],
-					Language:    languages[i],
-					Author:      authors[i],
-					Duration:    durations[i],
-					Money:       moneys[i],
-					Link:        links[i],
-				})
-			}
+				if strings.Contains(strings.ToLower(course.Description), strings.ToLower(searchValue)) {
+					courses = append(courses, course)
 
-			if names == nil {
+				} else if strings.Contains(strings.ToLower(course.Description), strings.ToLower(searchValue)) {
+					courses = append(courses, course)
+				}
+			})
+
+			if element.Length() == 0 {
 				break
 			}
 		}
 	}
 
-	return coueses, nil
+	return courses, nil
 }

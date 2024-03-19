@@ -22,9 +22,9 @@ func NewCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 	return r
 }
 
-func (r *courseRepo) GetShortCourse(valueSearch string, inDescription bool) ([]Course, error) {
+func (r *courseRepo) GetShortCourse(searchValue string) ([]Course, error) {
 
-	courses, err := r.getCourseInRedis(valueSearch, inDescription)
+	courses, err := r.getCourseInRedis(searchValue)
 	if err != nil {
 		return nil, newm_helper.Trace(err)
 	}
@@ -33,7 +33,7 @@ func (r *courseRepo) GetShortCourse(valueSearch string, inDescription bool) ([]C
 		return courses, nil
 	}
 
-	return r.getCourseInPostgres(valueSearch, inDescription)
+	return r.getCourseInPostgres(searchValue)
 }
 
 func (r *courseRepo) GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error) {
@@ -46,32 +46,26 @@ func (r *courseRepo) GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error)
 		return nil, nil
 	}
 
-	if status > 299{
+	if status > 299 {
 		return nil, newm_helper.Trace(fmt.Errorf("status code %d\n\n%s", status, string(body)))
 	}
 
 	return body, nil
 }
 
-func (r *courseRepo) getCourseInPostgres(valueSearch string, inDescription bool) ([]Course, error) {
+func (r *courseRepo) getCourseInPostgres(searchValue string) ([]Course, error) {
 	var courses []Course
 
-	var str string
+	str := `select * from courses where name ilike $1`
 
-	if inDescription {
-		str = `select * from courses where description ilike $1`
-	} else {
-		str = `select * from courses where name ilike $1`
-	}
-
-	if err := r.psql.Select(&courses, str, "%"+strings.Replace(valueSearch, " ", "%", -1)+"%"); err != nil {
+	if err := r.psql.Select(&courses, str, "%"+strings.Replace(searchValue, " ", "%", -1)+"%"); err != nil {
 		return nil, newm_helper.Trace(err)
 	}
 
 	return courses, nil
 }
 
-func (r *courseRepo) getCourseInRedis(valueSearch string, inDescription bool) ([]Course, error) {
+func (r *courseRepo) getCourseInRedis(searchValue string) ([]Course, error) {
 	var courses []Course
 
 	c, err := r.redis.LRange(context.Background(), "courses", 0, -1).Result()
@@ -86,15 +80,8 @@ func (r *courseRepo) getCourseInRedis(valueSearch string, inDescription bool) ([
 			return nil, newm_helper.Trace(err)
 		}
 
-		if inDescription {
-			if strings.Contains(course.Description, valueSearch) {
-				courses = append(courses, course)
-			}
-
-		} else {
-			if strings.Contains(course.Description, valueSearch) {
-				courses = append(courses, course)
-			}
+		if strings.Contains(course.Description, searchValue) {
+			courses = append(courses, course)
 		}
 	}
 

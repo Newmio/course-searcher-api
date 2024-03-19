@@ -1,12 +1,15 @@
 package app
 
 import (
+	"fmt"
 	"searcher/internal/app/db/postgres"
 	"searcher/internal/app/db/redis"
 	"searcher/internal/course"
 	"searcher/internal/user"
 
+	"github.com/fatih/color"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func InitProject() error {
@@ -23,6 +26,8 @@ func InitProject() error {
 
 	e := echo.New()
 
+	e.Use(middleware.Recover())
+
 	userRepo := user.NewPsqlUserRepo(dbPsql)
 	userService := user.NewUserService(userRepo)
 	userHandler := user.NewHandler(userService)
@@ -33,5 +38,24 @@ func InitProject() error {
 	courseHandler := course.NewHandler(courseService)
 	e = courseHandler.InitCourseRoutes(e)
 
-	return e.Start(":8080")
+	for _, value := range e.Routes() {
+		var customColor color.Attribute
+
+		switch value.Method{
+		case "GET":
+			customColor = color.BgHiGreen
+
+		case "POST":
+			customColor = color.BgHiCyan
+
+		case "PUT":
+			customColor = color.BgHiMagenta
+		}
+
+		color.New(customColor, color.Bold).Println(fmt.Sprintf("\n\t%s : %s", value.Path, value.Method))
+	}
+
+	e.Logger.Fatal(e.Start(":8080"))
+
+	return nil
 }

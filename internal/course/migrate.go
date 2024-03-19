@@ -8,6 +8,7 @@ func (r *courseRepo) initTables() {
 		language text default '',
 		author text default '',
 		duration text default '',
+		rating text default '',
 		platform text not null,
 		money text default '',
 		link text not null
