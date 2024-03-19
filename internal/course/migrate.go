@@ -1,6 +1,6 @@
 package course
 
-func (r *courseRepo) initTables() {
+func (r *psqlCourseRepo) initTables() {
 	str := `create table if not exists courses(
 		id serial primary key,
 		name text not null,

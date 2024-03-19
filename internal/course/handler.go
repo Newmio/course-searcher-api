@@ -42,6 +42,6 @@ func (h *Handler) GetLongCourses(c echo.Context) error {
 
 	return c.JSON(200, map[string]interface{}{
 		"courses": courses,
-		"count": len(courses),
+		"count":   len(courses),
 	})
 }

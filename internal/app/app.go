@@ -33,8 +33,8 @@ func InitProject() error {
 	userHandler := user.NewHandler(userService)
 	e = userHandler.InitUserRoutes(e)
 
-	courseRepo := course.NewCourseRepo(dbPsql, dbRedis)
-	courseService := course.NewCourseService(courseRepo)
+	managerCourseRepo := course.NewManagerCourseRepo(dbPsql, dbRedis)
+	courseService := course.NewCourseService(managerCourseRepo)
 	courseHandler := course.NewHandler(courseService)
 	e = courseHandler.InitCourseRoutes(e)
 
