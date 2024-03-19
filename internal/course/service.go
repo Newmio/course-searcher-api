@@ -46,8 +46,8 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 		param.RequestId = newm_helper.NewRequestId()
 
 		for {
-			param.Url = strings.Replace(value.Url, "{{page}}", url.QueryEscape(fmt.Sprintf("%d", value.Page)), -1)
-			param.Url = strings.Replace(param.Url, "{{searchValue}}", url.QueryEscape(searchValue), -1)
+			param.Url = strings.Replace(value.Url, PAGE, url.QueryEscape(fmt.Sprintf("%d", value.Page)), -1)
+			param.Url = strings.Replace(param.Url, SEARCH_VALUE, url.QueryEscape(searchValue), -1)
 			value.Page++
 
 			body, err := s.r.GetHtmlCourseInWeb(param)
@@ -120,10 +120,14 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 					}
 				}
 
-				if strings.Contains(strings.ToLower(course.Name), strings.ToLower(searchValue)) {
+				strName := strings.ToLower(course.Name)
+				strDescription := strings.ToLower(course.Description)
+				strSearchValue := strings.ToLower(searchValue)
+
+				if strings.Contains(strName, strSearchValue) {
 					courses = append(courses, course)
 
-				} else if strings.Contains(strings.ToLower(course.Description), strings.ToLower(searchValue)) {
+				} else if strings.Contains(strDescription, strSearchValue) {
 					courses = append(courses, course)
 				}
 			})

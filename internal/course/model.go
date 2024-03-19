@@ -1,5 +1,7 @@
 package course
 
+import "fmt"
+
 type Course struct {
 	Id          int    `db:"id" json:"id" xml:"id"`
 	Name        string `db:"name" json:"name" xml:"name"`
@@ -9,7 +11,7 @@ type Course struct {
 	Duration    string `db:"duration" json:"duration" xml:"duration"`
 	Rating      string `db:"rating" json:"rating" xml:"rating"`
 	Platform    string `db:"platform" json:"platform" xml:"platform"`
-	Money       string    `db:"money" json:"money" xml:"money"`
+	Money       string `db:"money" json:"money" xml:"money"`
 	Link        string `db:"link" json:"link" xml:"link"`
 }
 
@@ -21,9 +23,14 @@ type WebCourseParam struct {
 	Fields     map[string]string
 }
 
+const (
+	SEARCH_VALUE = "{{searchValue}}"
+	PAGE         = "{{page}}"
+)
+
 var WebCourseParams = map[string]WebCourseParam{
 	"CourseHunter": {
-		Url:       "https://coursehunter.net/search?q={{searchValue}}&order_by=votes_pos&order=desc&searching=true&page={{page}}",
+		Url:       fmt.Sprintf("https://coursehunter.net/search?q=%s&order_by=votes_pos&order=desc&searching=true&page=%s", SEARCH_VALUE, PAGE),
 		MainField: "article.course",
 		Fields: map[string]string{
 			"name":        "h3.course-primary-name",
