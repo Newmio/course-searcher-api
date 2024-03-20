@@ -7,11 +7,12 @@ import (
 )
 
 type IPsqlCourseRepo interface {
-	GetCourseInPostgres(searchValue string) ([]Course, error)
+	GetCourse(searchValue string) ([]Course, error)
+	CreateCourse(course Course) error
 }
 
 type IRedisCourseRepo interface {
-	GetCourseInRedis(searchValue string) ([]Course, error)
+	GetCourse(searchValue string) ([]Course, error)
 }
 
 type IHttpCourseRepo interface {
@@ -31,9 +32,13 @@ func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 	return &managerCourseRepo{psql: psqlRepo, redis: redisRepo, http: httpRepo}
 }
 
+func (r *managerCourseRepo) CreateCourse(course Course) error {
+	return r.psql.CreateCourse(course)
+}
+
 func (r *managerCourseRepo) GetShortCourse(searchValue string) ([]Course, error) {
 
-	courses, err := r.redis.GetCourseInRedis(searchValue)
+	courses, err := r.redis.GetCourse(searchValue)
 	if err != nil {
 		return nil, newm_helper.Trace(err)
 	}
@@ -42,7 +47,7 @@ func (r *managerCourseRepo) GetShortCourse(searchValue string) ([]Course, error)
 		return courses, nil
 	}
 
-	return r.psql.GetCourseInPostgres(searchValue)
+	return r.psql.GetCourse(searchValue)
 }
 
 func (r *managerCourseRepo) GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error){

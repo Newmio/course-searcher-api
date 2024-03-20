@@ -12,6 +12,7 @@ import (
 type ICourseRepo interface {
 	GetShortCourse(valueSearch string) ([]Course, error)
 	GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error)
+	CreateCourse(course Course) error
 }
 
 type courseService struct {
@@ -24,6 +25,10 @@ func NewCourseService(r ICourseRepo) ICourseService {
 
 func (s *courseService) GetShortCourses(searchValue string) ([]Course, error) {
 	return s.r.GetShortCourse(searchValue)
+}
+
+func (s *courseService) CreateCourse(course Course) error {
+	return s.r.CreateCourse(course)
 }
 
 func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
@@ -71,13 +76,10 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 				strDescription := strings.ToLower(course.Description)
 				strSearchValue := strings.ToLower(searchValue)
 
-				if strings.Contains(strName, strSearchValue) {
-					courses = append(courses, course)
-
-				} else if strings.Contains(strDescription, strSearchValue) {
+				if strings.Contains(strName, strSearchValue) || strings.Contains(strDescription, strSearchValue) {
 					courses = append(courses, course)
 				}
-				
+
 			})
 
 			if element.Length() == 0 {

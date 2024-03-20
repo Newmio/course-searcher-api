@@ -7,6 +7,7 @@ import (
 
 type ICourseService interface {
 	GetLongCourses(searchValue string) ([]Course, error)
+	CreateCourse(course Course) error
 }
 
 type Handler struct {
@@ -26,6 +27,21 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo) *echo.Echo {
 	}
 
 	return e
+}
+
+func (h *Handler) CreateCourse(c echo.Context) error {
+	var course Course
+
+	if err := c.Bind(&course); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	err := h.s.CreateCourse(course)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(201, nil)
 }
 
 func (h *Handler) GetLongCourses(c echo.Context) error {
