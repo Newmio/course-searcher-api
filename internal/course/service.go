@@ -63,22 +63,22 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 			element := doc.Find(value.MainField)
 
 			element.Each(func(i int, node *goquery.Selection) {
+
+				course := s.findCourseInHtml(element, value.Fields)
+				course.Platform = key
+
+				strName := strings.ToLower(course.Name)
+				strDescription := strings.ToLower(course.Description)
+				strSearchValue := strings.ToLower(searchValue)
+
+				if strings.Contains(strName, strSearchValue) {
+					courses = append(courses, course)
+
+				} else if strings.Contains(strDescription, strSearchValue) {
+					courses = append(courses, course)
+				}
 				
 			})
-			
-			course := s.findCourseInHtml(element, value.Fields)
-			course.Platform = key
-
-			strName := strings.ToLower(course.Name)
-			strDescription := strings.ToLower(course.Description)
-			strSearchValue := strings.ToLower(searchValue)
-
-			if strings.Contains(strName, strSearchValue) {
-				courses = append(courses, course)
-
-			} else if strings.Contains(strDescription, strSearchValue) {
-				courses = append(courses, course)
-			}
 
 			if element.Length() == 0 {
 				break
@@ -89,42 +89,39 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 	return courses, nil
 }
 
-func (s *courseService) findCourseInHtml(element *goquery.Selection, fields map[string]string) Course {
+func (s *courseService) findCourseInHtml(node *goquery.Selection, fields map[string]string) Course {
 	var course Course
 
-	element.Each(func(i int, node *goquery.Selection) {
+	for key, value := range fields {
 
-		for key, value := range fields {
+		var valuesInHtml []string
+		var selector, attr string
 
-			var valuesInHtml []string
-			var selector, attr string
-
-			parts := strings.Split(value, "<>")
-			if len(parts) == 1 {
-				selector = parts[0]
-				attr = ""
-			} else {
-				selector = parts[0]
-				attr = parts[1]
-			}
-
-			node.Find(selector).Each(func(i int, s *goquery.Selection) {
-
-				if attr != "" {
-					str, ok := s.Attr(attr)
-					if !ok {
-						str = fmt.Sprintf("%s not found", key)
-					}
-
-					valuesInHtml = append(valuesInHtml, str)
-				} else {
-					valuesInHtml = append(valuesInHtml, strings.TrimSpace(strings.ReplaceAll(s.Text(), "\n", "")))
-				}
-			})
-
-			s.fillCourse(&course, valuesInHtml, key)
+		parts := strings.Split(value, "<>")
+		if len(parts) == 1 {
+			selector = parts[0]
+			attr = ""
+		} else {
+			selector = parts[0]
+			attr = parts[1]
 		}
-	})
+
+		node.Find(selector).Each(func(i int, s *goquery.Selection) {
+
+			if attr != "" {
+				str, ok := s.Attr(attr)
+				if !ok {
+					str = fmt.Sprintf("%s not found", key)
+				}
+
+				valuesInHtml = append(valuesInHtml, str)
+			} else {
+				valuesInHtml = append(valuesInHtml, strings.TrimSpace(strings.ReplaceAll(s.Text(), "\n", "")))
+			}
+		})
+
+		s.fillCourse(&course, valuesInHtml, key)
+	}
 
 	return course
 }
