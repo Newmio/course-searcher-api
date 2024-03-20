@@ -13,6 +13,7 @@ type ICourseRepo interface {
 	GetShortCourse(valueSearch string) ([]Course, error)
 	GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error)
 	CreateCourse(course Course) error
+	UpdateCourse(course Course) error
 }
 
 type courseService struct {
@@ -23,12 +24,16 @@ func NewCourseService(r ICourseRepo) ICourseService {
 	return &courseService{r: r}
 }
 
-func (s *courseService) GetShortCourses(searchValue string) ([]Course, error) {
-	return s.r.GetShortCourse(searchValue)
+func (s *courseService) UpdateCourse(course Course) error {
+	return s.r.UpdateCourse(course)
 }
 
 func (s *courseService) CreateCourse(course Course) error {
 	return s.r.CreateCourse(course)
+}
+
+func (s *courseService) GetShortCourses(searchValue string) ([]Course, error) {
+	return s.r.GetShortCourse(searchValue)
 }
 
 func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {

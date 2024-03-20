@@ -9,10 +9,12 @@ import (
 type IPsqlCourseRepo interface {
 	GetCourse(searchValue string) ([]Course, error)
 	CreateCourse(course Course) error
+	UpdateCourse(course Course) error
 }
 
 type IRedisCourseRepo interface {
 	GetCourse(searchValue string) ([]Course, error)
+	UpdateCourse(course Course) error
 }
 
 type IHttpCourseRepo interface {
@@ -30,6 +32,14 @@ func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 	redisRepo := NewRedisCourseRepo(redis)
 	httpRepo := NewHttpCourseRepo()
 	return &managerCourseRepo{psql: psqlRepo, redis: redisRepo, http: httpRepo}
+}
+
+func (r *managerCourseRepo) UpdateCourse(course Course) error {
+	if err := r.psql.UpdateCourse(course); err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return r.redis.UpdateCourse(course)
 }
 
 func (r *managerCourseRepo) CreateCourse(course Course) error {

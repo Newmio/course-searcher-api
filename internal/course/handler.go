@@ -8,6 +8,7 @@ import (
 type ICourseService interface {
 	GetLongCourses(searchValue string) ([]Course, error)
 	CreateCourse(course Course) error
+	UpdateCourse(course Course) error
 }
 
 type Handler struct {
@@ -34,6 +35,10 @@ func (h *Handler) CreateCourse(c echo.Context) error {
 
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if course.Link != ""{
+		return c.JSON(400, newm_helper.ErrorResponse("bad request"))
 	}
 
 	err := h.s.CreateCourse(course)

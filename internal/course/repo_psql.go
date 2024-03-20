@@ -19,12 +19,25 @@ func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 	return r
 }
 
+func (r *psqlCourseRepo) UpdateCourse(course Course) error {
+	str := `update courses set name = $1, description = $2, language = $3, author = $4, 
+	duration = $5, rating = $6, platform = $7, money = $8, link = $9 where id = $10`
+
+	_, err := r.psql.Exec(str, course.Name, course.Description, course.Language, course.Author,
+		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.Id)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
 func (r *psqlCourseRepo) CreateCourse(course Course) error {
 	str := `select * from courses where link = $1`
 
 	_, err := r.psql.Exec(str, course.Link)
 	if err == nil {
-		if err != sql.ErrNoRows{
+		if err != sql.ErrNoRows {
 			return newm_helper.Trace(err, str)
 		}
 	}
