@@ -1,5 +1,7 @@
 github.com/Newmio/newm_helper v1.0.4 h1:bbG4vb7xZZt8Tg138fdQEp9GLmq0CkV+ApuJmQD17dY=
 github.com/Newmio/newm_helper v1.0.4/go.mod h1:hBhCgptqNXbRQaSJKX4e/nwknX+MdByy6vmIWknI2/0=
+github.com/Newmio/newm_helper v1.1.1 h1:seSNnl/7TSfEAnAQBTCT13ObeOxq5gIlUcVS1FSWMyE=
+github.com/Newmio/newm_helper v1.1.1/go.mod h1:hBhCgptqNXbRQaSJKX4e/nwknX+MdByy6vmIWknI2/0=
 github.com/Newmio/newm_logger v0.0.0-20240316110707-39c01056222e h1:EXWuxJNlUBvGgVve4PtIIf+7GDoPUg4MxF1Dj/kj4gg=
 github.com/Newmio/newm_logger v0.0.0-20240316110707-39c01056222e/go.mod h1:etbtV4KNJ2wFRCVtiVWi5H62zXn2YlYlST7pCQ699dA=
 github.com/PuerkitoBio/goquery v1.9.1 h1:mTL6XjbJTZdpfL+Gwl5U2h1l9yEkJjhmlTeV9VPW7UI=

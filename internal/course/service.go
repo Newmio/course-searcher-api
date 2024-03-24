@@ -74,7 +74,7 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 
 			element.Each(func(i int, node *goquery.Selection) {
 
-				course := s.findCourseInHtml(element, value.Fields)
+				course := s.findCourseInHtml(node, value.Fields)
 				course.Platform = key
 
 				strName := strings.ToLower(course.Name)

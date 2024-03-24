@@ -1,6 +1,8 @@
 package course
 
 import (
+	"fmt"
+
 	"github.com/Newmio/newm_helper"
 	"github.com/labstack/echo/v4"
 )
@@ -37,7 +39,7 @@ func (h *Handler) CreateCourse(c echo.Context) error {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	if course.Link != ""{
+	if course.Link != "" {
 		return c.JSON(400, newm_helper.ErrorResponse("bad request"))
 	}
 
@@ -51,6 +53,11 @@ func (h *Handler) CreateCourse(c echo.Context) error {
 
 func (h *Handler) GetLongCourses(c echo.Context) error {
 	searchValue := c.QueryParam("search_value")
+	accept := c.Request().Header.Get("Accept")
+
+	if accept == "" {
+		c.JSON(400, newm_helper.ErrorResponse("Accept header is required"))
+	}
 
 	if searchValue == "" {
 		return c.JSON(400, newm_helper.ErrorResponse("searchValue is required"))
@@ -59,6 +66,21 @@ func (h *Handler) GetLongCourses(c echo.Context) error {
 	courses, err := h.s.GetLongCourses(searchValue)
 	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if accept == "application/xml" {
+		return c.XML(200, map[string]interface{}{
+			"courses": courses,
+			"count":   len(courses),
+		})
+
+	} else if accept == "text/html" {
+		strHtml, err := newm_helper.RenderHtml("static/course/course_template.html", courses)
+		if err != nil {
+			fmt.Println(err)
+			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+		}
+		return c.HTML(200, strHtml)
 	}
 
 	return c.JSON(200, map[string]interface{}{

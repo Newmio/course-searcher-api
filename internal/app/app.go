@@ -26,8 +26,6 @@ func InitProject() error {
 
 	e := echo.New()
 
-	e.Use(middleware.Recover())
-
 	userRepo := user.NewPsqlUserRepo(dbPsql)
 	userService := user.NewUserService(userRepo)
 	userHandler := user.NewHandler(userService)
@@ -38,10 +36,22 @@ func InitProject() error {
 	courseHandler := course.NewHandler(courseService)
 	e = courseHandler.InitCourseRoutes(e)
 
+	e.Use(middleware.Recover())
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format:           "\n\n [ ${time_custom} ]  ${latency_human}  ${status}   ${method}   ${uri}",
+		CustomTimeFormat: "2006/01/02 15:04:05",
+		Output:           color.Output,
+	}))
+
+	e.GET("/", func(c echo.Context) error {
+		return c.File("static/index.html")
+	})
+
+	color.New(color.BgMagenta, color.Bold).Println()
 	for _, value := range e.Routes() {
 		var customColor color.Attribute
 
-		switch value.Method{
+		switch value.Method {
 		case "GET":
 			customColor = color.BgHiGreen
 
@@ -52,8 +62,9 @@ func InitProject() error {
 			customColor = color.BgHiMagenta
 		}
 
-		color.New(customColor, color.Bold).Println(fmt.Sprintf("\n\t%s : %s", value.Path, value.Method))
+		color.New(customColor, color.Bold).Print(fmt.Sprintf("\n\t%s : %s", value.Path, value.Method))
 	}
+	color.New(color.BgMagenta, color.Bold).Println()
 
 	e.Logger.Fatal(e.Start(":8080"))
 
