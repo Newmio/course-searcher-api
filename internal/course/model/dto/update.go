@@ -15,5 +15,6 @@ type PutUpdateCourseRequest struct {
 }
 
 type PatchUpdateCourseRequest struct {
+	Id     int               `json:"id" xml:"id"`
 	Params map[string]string `json:"params" xml:"params"`
 }

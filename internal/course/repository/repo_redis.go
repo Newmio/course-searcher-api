@@ -18,26 +18,10 @@ func NewRedisCourseRepo(redis *redis.Client) IRedisCourseRepo {
 	return &redisCourseRepo{redis: redis}
 }
 
-// func (r *redisCourseRepo) CheckExistsCourse(id int) (bool, error) {
-// 	c, err := r.redis.LRange(context.Background(), "courses", 0, -1).Result()
-// 	if err != nil {
-// 		return false, newm_helper.Trace(err)
-// 	}
-
-// 	for _, v := range c {
-// 		var courseFromRedis Course
-
-// 		if err := json.Unmarshal([]byte(v), &courseFromRedis); err != nil {
-// 			return false, newm_helper.Trace(err)
-// 		}
-
-// 		if courseFromRedis.Id == id {
-// 			return true, nil
-// 		}
-// 	}
-
-// 	return false, nil
-// }
+func (r *redisCourseRepo) UpdateCourseByParam(course entity.UpdateCourseByParam) error {
+	// TODO доделать апдейт по параметрам (хер знает как это сделать в редисе)
+	return nil
+}
 
 func (r *redisCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 	var courseFromRedis entity.UpdateCourse

@@ -8,12 +8,21 @@ import (
 	"searcher/internal/user/repository"
 	"time"
 
+	"github.com/Newmio/newm_helper"
 	"github.com/golang-jwt/jwt"
 )
 
 const (
-	SALT    = "fwfjsndfwdqwdqwuriiotncna23219nsncjancasncuenfen834832u0423u094239jdjsanjsiqepee33425e1rqwftdyvghsuqw78e6trgdhbsuw3e7ref"
-	SIGNKEY = "ncaeuwbcewr43943qfb8340hdq4t93q48ugmx9bgbfbydsbufxy6g37b2qg6fxbg67b4gfbxq6xf7x349q6gf76gew7gqf67xg4qf76g437fggf6gwefg"
+	SALT       = "fwfjsndfwdqwdqwuriiotncna23219nsncjancasncuenfen834832u0423u094239jdjsanjsiqepee33425e1rqwftdyvghsuqw78e6trgdhbsuw3e7ref"
+	ACCESSKEY    = "ncaeuwbcewr43943qfb8340hdq4t93q48ugmx9bgbfbydsbufxy6g37b2qg6fxbg67b4gfbxq6xf7x349q6gf76gew7gqf67xg4qf76g437fggf6gwefg"
+	REFRESHKEY = "fjdhsjdkfjcnfjsoeorowmamxnswyfjvkjxkisporognfhsuwjeoosjshgdivifiebejhwefjweooeiwoirbvcbnnsuweybfwfbdyhbwybfwueyyw" +
+		"weybfiwbfhbveywbfiewbfniewhnfdiuqwenfiewbvhwtrngiqubnrifybieryqbywwqebgcmoquyxmouyrgfxoqurguyxmuy4ghxueyaugxmaeygmfxaeymuyeggyu" +
+		"fuebfuyerbavuearybfuyebrfuberauygboreyabguvyabhsuhfbuvyaewrbfouyaerbgvuobzbmyuaweogmfoeruyagouygbaeuyrbguyearbgxemryaguybagbgyu" +
+		"yergxureygnsxuyemrshyghieuhrgyuxmaberygmxeauyoghmxuyearhguyfrbegbveauhgfurheag7heargiufvhnraiyhgfyreghaerhgurehgiurhgurahgfurhg" +
+		"zmyerwbvzeroivrteiuwhbmouvxyhxmbeuywhgxvneryagnuxearuybveiruhfuihaweyfhaeruygfbuyhbuywqbufyberuybofnuerogbyeurbgyerbaguyebruagb" +
+		"nvxertwyfuviywerbmfxgerwuygbuywerbgfuyeruyfyrsuegbuvydfbaguyraeuygfuyaergfuyoaegrhufyhgaeruygfyuaerghfuyhaeruygfyuaegfyuegrayuf" +
+		"fanbeuyrbfueyroabgsrbxekrighxmhuysehrmxyherysughyesurbguyershgiyhearigyuheuoryghfuyerahgfyuiahsdfiygheryaghfuioydshgfyrhyrhgyrh"
+	TOKENTIME = 7200
 )
 
 type tokenClaims struct {
@@ -24,6 +33,7 @@ type tokenClaims struct {
 
 type IUserService interface {
 	CreateUser(user dto.RegisterUserRequest) error
+	Login(userReq dto.LoginUserRequest) (dto.LoginUserResponse, error)
 }
 
 type userService struct {
@@ -32,6 +42,24 @@ type userService struct {
 
 func NewUserService(r repository.IUserRepo) IUserService {
 	return &userService{r: r}
+}
+
+func (s *userService) Login(userReq dto.LoginUserRequest) (dto.LoginUserResponse, error) {
+	user, err := s.r.GetUser(userReq.Login, generatePasswordHash(userReq.Password))
+	if err != nil {
+		return dto.LoginUserResponse{}, err
+	}
+
+	if user.Id == 0 {
+		return dto.LoginUserResponse{}, fmt.Errorf("user not found")
+	}
+
+	access, refresh, err := s.GenerateToken(user.Id, user.Role)
+	if err != nil {
+		return dto.LoginUserResponse{}, err
+	}
+
+	return dto.NewLoginUserResponse(access, refresh, TOKENTIME), nil
 }
 
 func (s *userService) CreateUser(user dto.RegisterUserRequest) error {
@@ -46,7 +74,7 @@ func (s *userService) ParseToken(accessToken string) (int, error) {
 			return nil, fmt.Errorf("invalid signing method")
 		}
 
-		return []byte(SIGNKEY), nil
+		return []byte(ACCESSKEY), nil
 	})
 	if err != nil {
 		return 0, err
@@ -60,26 +88,36 @@ func (s *userService) ParseToken(accessToken string) (int, error) {
 	return claims.UserId, nil
 }
 
-func (s *userService) GenerateToken(username, password string) (string, error) {
-	user, err := s.r.GetUser(username, generatePasswordHash(password))
-	if err != nil {
-		return "", err
-	}
-
-	if user.Id == 0 {
-		return "", fmt.Errorf("user not found")
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
+func (s *userService) GenerateToken(id int, role string) (string, string, error) {
+	accessClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(TOKENTIME * time.Second).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
-		user.Id,
-		user.Role,
+		id,
+		role,
 	})
 
-	return token.SignedString([]byte(SIGNKEY))
+	refreshClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(TOKENTIME * time.Second).Unix(),
+			IssuedAt:  time.Now().Unix(),
+		},
+		id,
+		role,
+	})
+
+	accessToken, err := accessClaims.SignedString([]byte(ACCESSKEY))
+	if err != nil {
+		return "", "", newm_helper.Trace(err)
+	}
+
+	refreshToken, err := refreshClaims.SignedString([]byte(REFRESHKEY))
+	if err != nil {
+		return "", "", newm_helper.Trace(err)
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func generatePasswordHash(password string) string {

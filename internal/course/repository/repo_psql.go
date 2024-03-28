@@ -20,6 +20,28 @@ func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 	return r
 }
 
+func (r *psqlCourseRepo) UpdateCourseByParam(course entity.UpdateCourseByParam) error {
+	var values []string
+	
+	str := "update courses set"
+
+	i := 1
+	for k, v := range course.Params {
+		str += fmt.Sprintf(" %s = $%d,", k, i)
+		values = append(values, v)
+		i++
+	}
+
+	str = strings.TrimRight(str, ",") + fmt.Sprintf("where id = $%d", i+1)
+
+	_, err := r.psql.DB.Exec(str, values, course.Id)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
 func (r *psqlCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 	str := `update courses set name = $1, description = $2, language = $3, author = $4, 
 	duration = $5, rating = $6, platform = $7, money = $8, link = $9, active = $10, date_update = $11 where id = $12`

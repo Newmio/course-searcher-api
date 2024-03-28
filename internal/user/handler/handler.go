@@ -19,7 +19,27 @@ func NewHandler(s service.IUserService) *Handler {
 func (h *Handler) InitUserRoutes(e *echo.Echo) {
 
 	e.POST("/register", h.Register)
+	e.POST("/login", h.Login)
 
+}
+
+func (h *Handler) Login(c echo.Context) error {
+	var user dto.LoginUserRequest
+
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if err := user.Validate(); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	tokens, err := h.s.Login(user)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, tokens)
 }
 
 func (h *Handler) Register(c echo.Context) error {
