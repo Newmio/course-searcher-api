@@ -1,8 +1,9 @@
-package course
+package repository
 
 import (
 	"database/sql"
 	"fmt"
+	"searcher/internal/course/model/entity"
 	"strings"
 
 	"github.com/Newmio/newm_helper"
@@ -19,12 +20,12 @@ func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 	return r
 }
 
-func (r *psqlCourseRepo) UpdateCourse(course Course) error {
+func (r *psqlCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 	str := `update courses set name = $1, description = $2, language = $3, author = $4, 
-	duration = $5, rating = $6, platform = $7, money = $8, link = $9 where id = $10`
+	duration = $5, rating = $6, platform = $7, money = $8, link = $9, active = $10, date_update = $11 where id = $12`
 
 	_, err := r.psql.Exec(str, course.Name, course.Description, course.Language, course.Author,
-		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.Id)
+		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.Active, course.DateUpdate, course.Id)
 	if err != nil {
 		return newm_helper.Trace(err, str)
 	}
@@ -32,7 +33,7 @@ func (r *psqlCourseRepo) UpdateCourse(course Course) error {
 	return nil
 }
 
-func (r *psqlCourseRepo) CreateCourse(course Course) error {
+func (r *psqlCourseRepo) CreateCourse(course entity.CreateCourse) error {
 	str := `select * from courses where link = $1`
 
 	_, err := r.psql.Exec(str, course.Link)
@@ -40,12 +41,15 @@ func (r *psqlCourseRepo) CreateCourse(course Course) error {
 		if err != sql.ErrNoRows {
 			return newm_helper.Trace(err, str)
 		}
+
+		return nil
 	}
 
-	str = `insert into courses(name, description, language, author, duration, rating, platform, money, link) values($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+	str = `insert into courses(name, description, language, author, duration, rating, platform, money, link, active, date_create) 
+	values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	result, err := r.psql.Exec(str, course.Name, course.Description, course.Language, course.Author,
-		course.Duration, course.Rating, course.Platform, course.Money, course.Link)
+		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.Active, course.DateCreate)
 	if err != nil {
 		return newm_helper.Trace(err, str)
 	}
@@ -62,10 +66,10 @@ func (r *psqlCourseRepo) CreateCourse(course Course) error {
 	return nil
 }
 
-func (r *psqlCourseRepo) GetCourse(searchValue string) ([]Course, error) {
-	var courses []Course
+func (r *psqlCourseRepo) GetCourses(searchValue string) ([]entity.CourseList, error) {
+	var courses []entity.CourseList
 
-	str := `select * from courses where name ilike $1`
+	str := `select * from courses where name ilike $1 and active = true`
 
 	if err := r.psql.Select(&courses, str, "%"+strings.Replace(searchValue, " ", "%", -1)+"%"); err != nil {
 		return nil, newm_helper.Trace(err, str)

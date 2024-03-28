@@ -1,44 +1,81 @@
-package course
+package service
 
 import (
 	"fmt"
 	"net/url"
+	"searcher/internal/course/model/dto"
+	"searcher/internal/course/model/entity"
+	"searcher/internal/course/repository"
 	"strings"
 
 	"github.com/Newmio/newm_helper"
 	"github.com/PuerkitoBio/goquery"
 )
 
-type ICourseRepo interface {
-	GetShortCourse(valueSearch string) ([]Course, error)
-	GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error)
-	CreateCourse(course Course) error
-	UpdateCourse(course Course) error
+type WebCourseParam struct {
+	Url        string
+	MainField  string
+	Pagination bool
+	Page       int
+	Fields     map[string]string
+}
+
+const (
+	SEARCH_VALUE = "{{searchValue}}"
+	PAGE         = "{{page}}"
+)
+
+var WebCourseParams = map[string]WebCourseParam{
+	"CourseHunter": {
+		Url:       fmt.Sprintf("https://coursehunter.net/search?q=%s&order_by=votes_pos&order=desc&searching=true&page=%s", SEARCH_VALUE, PAGE),
+		MainField: "article.course",
+		Fields: map[string]string{
+			"name":        "h3.course-primary-name",
+			"description": "div.course-description",
+			"language":    "div.course-lang",
+			"author":      "div.course-lessons a",
+			"duration":    "div.course-duration",
+			"rating":      "div.course-rating-on<>data-text",
+			"money":       "div.course-status",
+			"link":        "div.course-details-bottom a<>href",
+		},
+	},
+}
+
+type ICourseService interface {
+	GetLongCourses(searchValue string) (dto.CourseListResponse, error)
+	CreateCourse(course dto.CreateCourseRequest) error
+	UpdateCourse(course dto.PutUpdateCourseRequest) error
 }
 
 type courseService struct {
-	r ICourseRepo
+	r repository.ICourseRepo
 }
 
-func NewCourseService(r ICourseRepo) ICourseService {
+func NewCourseService(r repository.ICourseRepo) ICourseService {
 	return &courseService{r: r}
 }
 
-func (s *courseService) UpdateCourse(course Course) error {
-	return s.r.UpdateCourse(course)
+func (s *courseService) UpdateCourse(course dto.PutUpdateCourseRequest) error {
+	return s.r.UpdateCourse(entity.NewUpdateCourse(course))
 }
 
-func (s *courseService) CreateCourse(course Course) error {
-	return s.r.CreateCourse(course)
+func (s *courseService) CreateCourse(course dto.CreateCourseRequest) error {
+	return s.r.CreateCourse(entity.NewCreateCourse(course))
 }
 
-func (s *courseService) GetShortCourses(searchValue string) ([]Course, error) {
-	return s.r.GetShortCourse(searchValue)
+func (s *courseService) GetShortCourses(searchValue string) (dto.CourseListResponse, error) {
+	courses, err := s.r.GetShortCourses(searchValue)
+	if err != nil {
+		return dto.CourseListResponse{}, newm_helper.Trace(err)
+	}
+
+	return entity.NewCourseListResponse(courses), nil
 }
 
-func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
+func (s *courseService) GetLongCourses(searchValue string) (dto.CourseListResponse, error) {
 	var param newm_helper.Param
-	var courses []Course
+	var courses []dto.CourseList
 	fields := make(map[string]WebCourseParam)
 
 	for key, value := range WebCourseParams {
@@ -62,12 +99,12 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 
 			body, err := s.r.GetHtmlCourseInWeb(param)
 			if err != nil {
-				return nil, newm_helper.Trace(err)
+				return dto.CourseListResponse{}, newm_helper.Trace(err)
 			}
 
 			doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
 			if err != nil {
-				return nil, newm_helper.Trace(err)
+				return dto.CourseListResponse{}, newm_helper.Trace(err)
 			}
 
 			element := doc.Find(value.MainField)
@@ -93,11 +130,11 @@ func (s *courseService) GetLongCourses(searchValue string) ([]Course, error) {
 		}
 	}
 
-	return courses, nil
+	return dto.NewCourseListResponse(courses), nil
 }
 
-func (s *courseService) findCourseInHtml(node *goquery.Selection, fields map[string]string) Course {
-	var course Course
+func (s *courseService) findCourseInHtml(node *goquery.Selection, fields map[string]string) dto.CourseList {
+	var course dto.CourseList
 
 	for key, value := range fields {
 
@@ -133,7 +170,7 @@ func (s *courseService) findCourseInHtml(node *goquery.Selection, fields map[str
 	return course
 }
 
-func (s *courseService) fillCourse(course *Course, values []string, atribute string) {
+func (s *courseService) fillCourse(course *dto.CourseList, values []string, atribute string) {
 	switch atribute {
 	case "name":
 		course.Name = strings.Join(values, ", ")

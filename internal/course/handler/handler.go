@@ -1,46 +1,57 @@
-package course
+package handler
 
 import (
 	"fmt"
+	"searcher/internal/course/model/dto"
+	"searcher/internal/course/service"
 
 	"github.com/Newmio/newm_helper"
 	"github.com/labstack/echo/v4"
 )
 
-type ICourseService interface {
-	GetLongCourses(searchValue string) ([]Course, error)
-	CreateCourse(course Course) error
-	UpdateCourse(course Course) error
-}
-
 type Handler struct {
-	s ICourseService
+	s service.ICourseService
 }
 
-func NewHandler(s ICourseService) *Handler {
+func NewHandler(s service.ICourseService) *Handler {
 	return &Handler{s: s}
 }
 
-func (h *Handler) InitCourseRoutes(e *echo.Echo) *echo.Echo {
-
+func (h *Handler) InitCourseRoutes(e *echo.Echo) {
 	api := e.Group("/api")
 	{
-		//api.GET("/short_courses", h.GetShortCourse)
-		api.GET("/long_courses", h.GetLongCourses)
+		course := api.Group("/course")
+		{
+			course.GET("/get/long", h.GetLongCourses)
+			course.POST("/create", h.CreateCourse)
+			course.PUT("/update", h.UpdateCourse)
+		}
 	}
-
-	return e
 }
 
-func (h *Handler) CreateCourse(c echo.Context) error {
-	var course Course
+func (h *Handler) UpdateCourse(c echo.Context) error {
+	var course dto.PutUpdateCourseRequest
 
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	if course.Link != "" {
-		return c.JSON(400, newm_helper.ErrorResponse("bad request"))
+	if err := h.s.UpdateCourse(course); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, nil)
+}
+
+func (h *Handler) CreateCourse(c echo.Context) error {
+	var course dto.CreateCourseRequest
+
+	if err := c.Bind(&course); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if err := course.Validate(); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
 	err := h.s.CreateCourse(course)
@@ -69,10 +80,7 @@ func (h *Handler) GetLongCourses(c echo.Context) error {
 	}
 
 	if accept == "application/xml" {
-		return c.XML(200, map[string]interface{}{
-			"courses": courses,
-			"count":   len(courses),
-		})
+		return c.XML(200, courses)
 
 	} else if accept == "text/html" {
 		strHtml, err := newm_helper.RenderHtml("static/course/course_template.html", courses)
@@ -83,8 +91,5 @@ func (h *Handler) GetLongCourses(c echo.Context) error {
 		return c.HTML(200, strHtml)
 	}
 
-	return c.JSON(200, map[string]interface{}{
-		"courses": courses,
-		"count":   len(courses),
-	})
+	return c.JSON(200, courses)
 }

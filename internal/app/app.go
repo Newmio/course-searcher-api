@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"searcher/internal/app/db/postgres"
 	"searcher/internal/app/db/redis"
-	"searcher/internal/course"
-	"searcher/internal/user"
+	"searcher/internal/course/handler"
+	"searcher/internal/course/repository"
+	"searcher/internal/course/service"
 
 	"github.com/fatih/color"
 	"github.com/labstack/echo/v4"
@@ -26,15 +27,15 @@ func InitProject() error {
 
 	e := echo.New()
 
-	userRepo := user.NewPsqlUserRepo(dbPsql)
-	userService := user.NewUserService(userRepo)
-	userHandler := user.NewHandler(userService)
-	e = userHandler.InitUserRoutes(e)
+	// userRepo := user.NewPsqlUserRepo(dbPsql)
+	// userService := user.NewUserService(userRepo)
+	// userHandler := user.NewHandler(userService)
+	// userHandler.InitUserRoutes(e)
 
-	managerCourseRepo := course.NewManagerCourseRepo(dbPsql, dbRedis)
-	courseService := course.NewCourseService(managerCourseRepo)
-	courseHandler := course.NewHandler(courseService)
-	e = courseHandler.InitCourseRoutes(e)
+	managerCourseRepo := repository.NewManagerCourseRepo(dbPsql, dbRedis)
+	courseService := service.NewCourseService(managerCourseRepo)
+	courseHandler := handler.NewHandler(courseService)
+	courseHandler.InitCourseRoutes(e)
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{

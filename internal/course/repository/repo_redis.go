@@ -1,8 +1,9 @@
-package course
+package repository
 
 import (
 	"context"
 	"encoding/json"
+	"searcher/internal/course/model/entity"
 	"strings"
 
 	"github.com/Newmio/newm_helper"
@@ -38,8 +39,8 @@ func NewRedisCourseRepo(redis *redis.Client) IRedisCourseRepo {
 // 	return false, nil
 // }
 
-func (r *redisCourseRepo) UpdateCourse(course Course) error {
-	var courseFromRedis Course
+func (r *redisCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
+	var courseFromRedis entity.UpdateCourse
 
 	c, err := r.redis.LRange(context.Background(), "courses", 0, -1).Result()
 	if err != nil {
@@ -62,6 +63,8 @@ func (r *redisCourseRepo) UpdateCourse(course Course) error {
 			courseFromRedis.Platform = course.Platform
 			courseFromRedis.Money = course.Money
 			courseFromRedis.Link = course.Link
+			courseFromRedis.Active = course.Active
+			courseFromRedis.DateUpdate = course.DateUpdate
 
 			jsonCourse, err := json.Marshal(courseFromRedis)
 			if err != nil {
@@ -79,8 +82,8 @@ func (r *redisCourseRepo) UpdateCourse(course Course) error {
 	return nil
 }
 
-func (r *redisCourseRepo) GetCourse(searchValue string) ([]Course, error) {
-	var courses []Course
+func (r *redisCourseRepo) GetCourses(searchValue string) ([]entity.CourseList, error) {
+	var courses []entity.CourseList
 
 	c, err := r.redis.LRange(context.Background(), "courses", 0, -1).Result()
 	if err != nil {
@@ -88,7 +91,7 @@ func (r *redisCourseRepo) GetCourse(searchValue string) ([]Course, error) {
 	}
 
 	for _, v := range c {
-		var course Course
+		var course entity.CourseList
 
 		if err := json.Unmarshal([]byte(v), &course); err != nil {
 			return nil, newm_helper.Trace(err)

@@ -1,4 +1,4 @@
-package course
+package repository
 
 func (r *psqlCourseRepo) initTables() {
 	str := `create table if not exists courses(
@@ -11,7 +11,10 @@ func (r *psqlCourseRepo) initTables() {
 		rating text default '',
 		platform text not null,
 		money text default '',
-		link text not null
+		link text unique not null,
+		active boolean default true,
+		date_create timestamp default now(),
+		date_update timestamp default now()
 	)`
 	_, err := r.psql.Exec(str)
 	if err != nil {

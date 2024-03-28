@@ -5,7 +5,7 @@ go 1.21.2
 require (
 	github.com/Newmio/newm_helper v1.1.1
 	github.com/PuerkitoBio/goquery v1.9.1
-	github.com/fatih/color v1.14.1
+	github.com/fatih/color v1.16.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jmoiron/sqlx v1.3.5

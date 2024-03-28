@@ -1,30 +1,43 @@
-package user
+package service
 
 import (
 	"crypto/sha1"
 	"fmt"
+	"searcher/internal/user/model/dto"
+	"searcher/internal/user/model/entity"
+	"searcher/internal/user/repository"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-type IUserRepo interface {
-	CreateUser(user User) error
-	GetUser(login, password string) (User, error)
+const (
+	SALT    = "fwfjsndfwdqwdqwuriiotncna23219nsncjancasncuenfen834832u0423u094239jdjsanjsiqepee33425e1rqwftdyvghsuqw78e6trgdhbsuw3e7ref"
+	SIGNKEY = "ncaeuwbcewr43943qfb8340hdq4t93q48ugmx9bgbfbydsbufxy6g37b2qg6fxbg67b4gfbxq6xf7x349q6gf76gew7gqf67xg4qf76g437fggf6gwefg"
+)
+
+type tokenClaims struct {
+	jwt.StandardClaims
+	UserId int    `json:"id_user"`
+	Role   string `json:"role"`
+}
+
+type IUserService interface {
+	CreateUser(user dto.RegisterUserRequest) error
 }
 
 type userService struct {
-	r IUserRepo
+	r repository.IUserRepo
 }
 
-func NewUserService(r IUserRepo) IUserService {
+func NewUserService(r repository.IUserRepo) IUserService {
 	return &userService{r: r}
 }
 
-func (s *userService) CreateUser(user User) error {
+func (s *userService) CreateUser(user dto.RegisterUserRequest) error {
 	user.Password = generatePasswordHash(user.Password)
 
-	return s.r.CreateUser(user)
+	return s.r.CreateUser(entity.NewCreateUser(user))
 }
 
 func (s *userService) ParseToken(accessToken string) (int, error) {
