@@ -11,9 +11,9 @@
         name="search_value" 
         type="text" 
         placeholder="golang..." 
-        hx-get="/api/long_courses" 
+        hx-get="/api/course/get/long" 
         hx-target="#search_results"
-        hx-headers='{"Accept": "text/html"}'
+        hx-headers='{"Accept": "text/html", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTE3OTMxODgsImlhdCI6MTcxMTc4NTk4OCwiaWRfdXNlciI6MSwicm9sZSI6InVzZXIifQ.w8og8D9G8lMk-ZJZ5i4Vi5EfVNz0tRtwVai-MtRaa2g"}'
         ></input>
 
         <div id="search_results"></div>

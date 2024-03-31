@@ -13,14 +13,14 @@ type ICourseRepo interface {
 	GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error)
 	CreateCourse(course entity.CreateCourse) error
 	UpdateCourse(course entity.UpdateCourse) error
-	UpdateCourseByParam(course entity.UpdateCourseByParam) error
+	UpdateCourseByParam(course entity.UpdateCourse) error
 }
 
 type IPsqlCourseRepo interface {
 	GetCourses(searchValue string) ([]entity.CourseList, error)
 	CreateCourse(course entity.CreateCourse) error
 	UpdateCourse(course entity.UpdateCourse) error
-	UpdateCourseByParam(course entity.UpdateCourseByParam) error
+	UpdateCourseByParam(course entity.UpdateCourse) error
 }
 
 type IRedisCourseRepo interface {
@@ -45,7 +45,7 @@ func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 	return &managerCourseRepo{psql: psqlRepo, redis: redisRepo, http: httpRepo}
 }
 
-func (r *managerCourseRepo) UpdateCourseByParam(course entity.UpdateCourseByParam) error {
+func (r *managerCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error {
 	return r.psql.UpdateCourseByParam(course)
 }
 

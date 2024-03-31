@@ -17,16 +17,36 @@ func NewHandler(s service.ICourseService) *Handler {
 	return &Handler{s: s}
 }
 
-func (h *Handler) InitCourseRoutes(e *echo.Echo) {
-	api := e.Group("/api")
+func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.MiddlewareFunc) {
+	api := e.Group("/api", middlewares["api"])
+	api.Use()
 	{
 		course := api.Group("/course")
 		{
-			course.GET("/get/long", h.GetLongCourses)
+			get := course.Group("/get")
+			{
+				get.POST("/long", h.GetLongCourses)
+			}
+
 			course.POST("/create", h.CreateCourse)
 			course.PUT("/update", h.UpdateCourse)
+			course.PATCH("/update_by_param", h.UpdateCourseByParam)
 		}
 	}
+}
+
+func (h *Handler) UpdateCourseByParam(c echo.Context) error {
+	var course dto.PutUpdateCourseRequest
+
+	if err := c.Bind(&course); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if err := h.s.UpdateCourseByParam(course); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, nil)
 }
 
 func (h *Handler) UpdateCourse(c echo.Context) error {
@@ -63,18 +83,22 @@ func (h *Handler) CreateCourse(c echo.Context) error {
 }
 
 func (h *Handler) GetLongCourses(c echo.Context) error {
-	searchValue := c.QueryParam("search_value")
+	var course dto.GetCourseRequest
 	accept := c.Request().Header.Get("Accept")
+
+	if err := c.Bind(&course); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
 
 	if accept == "" {
 		c.JSON(400, newm_helper.ErrorResponse("Accept header is required"))
 	}
 
-	if searchValue == "" {
-		return c.JSON(400, newm_helper.ErrorResponse("searchValue is required"))
+	if err := course.Validate(); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	courses, err := h.s.GetLongCourses(searchValue)
+	courses, err := h.s.GetLongCourses(course)
 	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}

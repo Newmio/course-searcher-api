@@ -11,10 +11,4 @@ type PutUpdateCourseRequest struct {
 	Platform    string `json:"platform" xml:"platform"`
 	Money       string `json:"money" xml:"money"`
 	Link        string `json:"link" xml:"link"`
-	Active      bool   `json:"active" xml:"active"`
-}
-
-type PatchUpdateCourseRequest struct {
-	Id     int               `json:"id" xml:"id"`
-	Params map[string]string `json:"params" xml:"params"`
 }

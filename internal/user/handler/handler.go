@@ -16,10 +16,10 @@ func NewHandler(s service.IUserService) *Handler {
 	return &Handler{s: s}
 }
 
-func (h *Handler) InitUserRoutes(e *echo.Echo) {
+func (h *Handler) InitUserRoutes(e *echo.Echo, middlewares map[string]echo.MiddlewareFunc) {
 
 	e.POST("/register", h.Register)
-	e.POST("/login", h.Login)
+	e.POST("/login", h.Login) // TODO: add refresh token
 
 }
 

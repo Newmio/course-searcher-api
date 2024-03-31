@@ -3,7 +3,7 @@ module searcher
 go 1.21.2
 
 require (
-	github.com/Newmio/newm_helper v1.1.1
+	github.com/Newmio/newm_helper v1.1.5
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/fatih/color v1.16.0
 	github.com/go-redis/redis/v8 v8.11.5

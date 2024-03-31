@@ -4,9 +4,14 @@ import (
 	"fmt"
 	"searcher/internal/app/db/postgres"
 	"searcher/internal/app/db/redis"
-	"searcher/internal/course/handler"
-	"searcher/internal/course/repository"
-	"searcher/internal/course/service"
+	handlerCourse "searcher/internal/course/handler"
+	repoCourse "searcher/internal/course/repository"
+	serviceCourse "searcher/internal/course/service"
+	handlerMiddleware "searcher/internal/middleware/handler"
+	serviceMiddleware "searcher/internal/middleware/service"
+	handlerUser "searcher/internal/user/handler"
+	repoUser "searcher/internal/user/repository"
+	serviceUser "searcher/internal/user/service"
 
 	"github.com/fatih/color"
 	"github.com/labstack/echo/v4"
@@ -27,22 +32,30 @@ func InitProject() error {
 
 	e := echo.New()
 
-	// userRepo := user.NewPsqlUserRepo(dbPsql)
-	// userService := user.NewUserService(userRepo)
-	// userHandler := user.NewHandler(userService)
-	// userHandler.InitUserRoutes(e)
-
-	managerCourseRepo := repository.NewManagerCourseRepo(dbPsql, dbRedis)
-	courseService := service.NewCourseService(managerCourseRepo)
-	courseHandler := handler.NewHandler(courseService)
-	courseHandler.InitCourseRoutes(e)
-
 	e.Use(middleware.Recover())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format:           "\n\n [ ${time_custom} ]  ${latency_human}  ${status}   ${method}   ${uri}",
+		Format:           " [ ${time_custom} ]  ${latency_human}  ${status}   ${method}   ${uri}\n\n",
 		CustomTimeFormat: "2006/01/02 15:04:05",
 		Output:           color.Output,
 	}))
+
+	middlewareService := serviceMiddleware.NewMiddlewareService()
+	middlewareHandler := handlerMiddleware.NewHandler(middlewareService)
+	middlewares := map[string]echo.MiddlewareFunc{
+		"api": middlewareHandler.ParseToken,
+	}
+
+	userRepo := repoUser.NewPsqlUserRepo(dbPsql)
+	userService := serviceUser.NewUserService(userRepo)
+	userHandler := handlerUser.NewHandler(userService)
+	userHandler.InitUserRoutes(e, middlewares)
+
+	managerCourseRepo := repoCourse.NewManagerCourseRepo(dbPsql, dbRedis)
+	courseService := serviceCourse.NewCourseService(managerCourseRepo)
+	courseHandler := handlerCourse.NewHandler(courseService)
+	courseHandler.InitCourseRoutes(e, middlewares)
+
+	e.Group("/api", middlewareHandler.ParseToken)
 
 	e.GET("/", func(c echo.Context) error {
 		return c.File("static/index.html")
@@ -67,7 +80,7 @@ func InitProject() error {
 	}
 	color.New(color.BgMagenta, color.Bold).Println()
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":8088"))
 
 	return nil
 }

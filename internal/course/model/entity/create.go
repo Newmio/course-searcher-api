@@ -1,6 +1,9 @@
 package entity
 
-import "searcher/internal/course/model/dto"
+import (
+	"searcher/internal/course/model/dto"
+	"time"
+)
 
 type CreateCourse struct {
 	Name        string
@@ -12,8 +15,8 @@ type CreateCourse struct {
 	Platform    string
 	Money       string
 	Link        string
-	DateCreate  string
 	Active      bool
+	DateCreate  string
 }
 
 func NewCreateCourse(course dto.CreateCourseRequest) CreateCourse {
@@ -28,5 +31,6 @@ func NewCreateCourse(course dto.CreateCourseRequest) CreateCourse {
 		Money:       course.Money,
 		Link:        course.Link,
 		Active:      true,
+		DateCreate:  time.Now().Format("2006-01-02 15:04:05"),
 	}
 }

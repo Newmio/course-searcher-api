@@ -18,8 +18,76 @@ func NewRedisCourseRepo(redis *redis.Client) IRedisCourseRepo {
 	return &redisCourseRepo{redis: redis}
 }
 
-func (r *redisCourseRepo) UpdateCourseByParam(course entity.UpdateCourseByParam) error {
-	// TODO доделать апдейт по параметрам (хер знает как это сделать в редисе)
+// Ну и гавно я написал хз как по другому
+func (r *redisCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error {
+	var courseFromRedis entity.UpdateCourse
+
+	c, err := r.redis.LRange(context.Background(), "courses", 0, -1).Result()
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	for i, v := range c {
+
+		if err := json.Unmarshal([]byte(v), &courseFromRedis); err != nil {
+			return newm_helper.Trace(err)
+		}
+
+		if courseFromRedis.Id == course.Id {
+
+			if course.Name != "" {
+				courseFromRedis.Name = course.Name
+			}
+
+			if course.Description != "" {
+				courseFromRedis.Description = course.Description
+			}
+
+			if course.Language != "" {
+				courseFromRedis.Language = course.Language
+			}
+
+			if course.Author != "" {
+				courseFromRedis.Author = course.Author
+			}
+
+			if course.Duration != "" {
+				courseFromRedis.Duration = course.Duration
+			}
+
+			if course.Rating != "" {
+				courseFromRedis.Rating = course.Rating
+			}
+
+			if course.Platform != "" {
+				courseFromRedis.Platform = course.Platform
+			}
+
+			if course.Money != "" {
+				courseFromRedis.Money = course.Money
+			}
+
+			if course.Link != "" {
+				courseFromRedis.Link = course.Link
+			}
+
+			if course.DateUpdate != "" {
+				courseFromRedis.DateUpdate = course.DateUpdate
+			}
+
+			jsonCourse, err := json.Marshal(courseFromRedis)
+			if err != nil {
+				return newm_helper.Trace(err)
+			}
+
+			if err := r.redis.LSet(context.Background(), "courses", int64(i), jsonCourse).Err(); err != nil {
+				return newm_helper.Trace(err)
+			}
+
+			break
+		}
+	}
+
 	return nil
 }
 
@@ -32,7 +100,7 @@ func (r *redisCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 	}
 
 	for i, v := range c {
-		
+
 		if err := json.Unmarshal([]byte(v), &courseFromRedis); err != nil {
 			return newm_helper.Trace(err)
 		}
@@ -47,7 +115,6 @@ func (r *redisCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 			courseFromRedis.Platform = course.Platform
 			courseFromRedis.Money = course.Money
 			courseFromRedis.Link = course.Link
-			courseFromRedis.Active = course.Active
 			courseFromRedis.DateUpdate = course.DateUpdate
 
 			jsonCourse, err := json.Marshal(courseFromRedis)

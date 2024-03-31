@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"net/url"
 	"searcher/internal/course/model/dto"
 	"searcher/internal/course/model/entity"
 	"searcher/internal/course/repository"
@@ -16,7 +15,6 @@ type WebCourseParam struct {
 	Url        string
 	MainField  string
 	Pagination bool
-	Page       int
 	Fields     map[string]string
 }
 
@@ -43,9 +41,10 @@ var WebCourseParams = map[string]WebCourseParam{
 }
 
 type ICourseService interface {
-	GetLongCourses(searchValue string) (dto.CourseListResponse, error)
+	GetLongCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
 	CreateCourse(course dto.CreateCourseRequest) error
 	UpdateCourse(course dto.PutUpdateCourseRequest) error
+	UpdateCourseByParam(course dto.PutUpdateCourseRequest) error
 }
 
 type courseService struct {
@@ -54,6 +53,10 @@ type courseService struct {
 
 func NewCourseService(r repository.ICourseRepo) ICourseService {
 	return &courseService{r: r}
+}
+
+func (s *courseService) UpdateCourseByParam(course dto.PutUpdateCourseRequest) error {
+	return s.r.UpdateCourseByParam(entity.NewUpdateCourse(course))
 }
 
 func (s *courseService) UpdateCourse(course dto.PutUpdateCourseRequest) error {
@@ -73,7 +76,7 @@ func (s *courseService) GetShortCourses(searchValue string) (dto.CourseListRespo
 	return entity.NewCourseListResponse(courses), nil
 }
 
-func (s *courseService) GetLongCourses(searchValue string) (dto.CourseListResponse, error) {
+func (s *courseService) GetLongCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error) {
 	var param newm_helper.Param
 	var courses []dto.CourseList
 	fields := make(map[string]WebCourseParam)
@@ -91,43 +94,37 @@ func (s *courseService) GetLongCourses(searchValue string) (dto.CourseListRespon
 		}
 		param.CreateLog = true
 		param.RequestId = newm_helper.NewRequestId()
+		param.Url = strings.Replace(value.Url, PAGE, fmt.Sprintf("%d", searchValue.Page), -1)
+		param.Url = strings.Replace(param.Url, SEARCH_VALUE, searchValue.SearchValue, -1)
 
-		for {
-			param.Url = strings.Replace(value.Url, PAGE, url.QueryEscape(fmt.Sprintf("%d", value.Page)), -1)
-			param.Url = strings.Replace(param.Url, SEARCH_VALUE, url.QueryEscape(searchValue), -1)
-			value.Page++
+		fmt.Println(param.Url)
 
-			body, err := s.r.GetHtmlCourseInWeb(param)
-			if err != nil {
-				return dto.CourseListResponse{}, newm_helper.Trace(err)
-			}
-
-			doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
-			if err != nil {
-				return dto.CourseListResponse{}, newm_helper.Trace(err)
-			}
-
-			element := doc.Find(value.MainField)
-
-			element.Each(func(i int, node *goquery.Selection) {
-
-				course := s.findCourseInHtml(node, value.Fields)
-				course.Platform = key
-
-				strName := strings.ToLower(course.Name)
-				strDescription := strings.ToLower(course.Description)
-				strSearchValue := strings.ToLower(searchValue)
-
-				if strings.Contains(strName, strSearchValue) || strings.Contains(strDescription, strSearchValue) {
-					courses = append(courses, course)
-				}
-
-			})
-
-			if element.Length() == 0 {
-				break
-			}
+		body, err := s.r.GetHtmlCourseInWeb(param)
+		if err != nil {
+			return dto.CourseListResponse{}, newm_helper.Trace(err)
 		}
+
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
+		if err != nil {
+			return dto.CourseListResponse{}, newm_helper.Trace(err)
+		}
+
+		element := doc.Find(value.MainField)
+
+		element.Each(func(i int, node *goquery.Selection) {
+
+			course := s.findCourseInHtml(node, value.Fields)
+			course.Platform = key
+
+			strName := strings.Replace(strings.ToLower(course.Name), " ", "", -1)
+			strDescription := strings.Replace(strings.ToLower(course.Description), " ", "", -1)
+			strSearchValue := strings.Replace(strings.ToLower(searchValue.SearchValue), " ", "", -1)
+
+			if strings.Contains(strName, strSearchValue) || strings.Contains(strDescription, strSearchValue) {
+				courses = append(courses, course)
+			}
+		})
+
 	}
 
 	return dto.NewCourseListResponse(courses), nil
