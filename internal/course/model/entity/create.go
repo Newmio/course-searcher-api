@@ -34,3 +34,25 @@ func NewCreateCourse(course dto.CreateCourseRequest) CreateCourse {
 		DateCreate:  time.Now().Format("2006-01-02 15:04:05"),
 	}
 }
+
+func NewCreateCourses(courses []dto.CourseList) []CreateCourse {
+	var coursesResp []CreateCourse
+
+	for _, value := range courses {
+		coursesResp = append(coursesResp, CreateCourse{
+			Name:        value.Name,
+			Description: value.Description,
+			Language:    value.Language,
+			Author:      value.Author,
+			Duration:    value.Duration,
+			Rating:      value.Rating,
+			Platform:    value.Platform,
+			Money:       value.Money,
+			Link:        value.Link,
+			Active:      true,
+			DateCreate:  time.Now().Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	return coursesResp
+}

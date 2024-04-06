@@ -19,13 +19,49 @@ func NewRedisCourseRepo(redis *redis.Client) IRedisCourseRepo {
 	return &redisCourseRepo{redis: redis}
 }
 
-func (r *redisCourseRepo) CreateCourse(course entity.CreateCourse, userId string) error {
+func (r *redisCourseRepo) GetCacheCourses(searchValue string) ([]entity.CourseList, error) {
+	var courses []entity.CourseList
+
+	c, err := r.redis.LRange(context.Background(), fmt.Sprintf("courses_%s", searchValue), 0, -1).Result()
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	for _, v := range c {
+		var course entity.CourseList
+
+		if err := json.Unmarshal([]byte(v), &course); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		courses = append(courses, course)
+	}
+
+	return courses, nil
+}
+
+func (r *redisCourseRepo) CreateCacheCourses(courses []entity.CreateCourse, keyPrefix string) error {
+	for _, course := range courses {
+		body, err := json.Marshal(course)
+		if err != nil {
+			return newm_helper.Trace(err)
+		}
+
+		if err := r.redis.RPush(context.Background(), fmt.Sprintf("courses_%s", keyPrefix), string(body)).Err(); err != nil {
+			return newm_helper.Trace(err)
+		}
+	}
+
+	return nil
+}
+
+func (r *redisCourseRepo) CreateGlobalCourse(course entity.CreateCourse) error {
 	body, err := json.Marshal(course)
 	if err != nil {
 		return newm_helper.Trace(err)
 	}
 
-	if err := r.redis.RPush(context.Background(), fmt.Sprintf("courses_%s", userId), string(body)).Err(); err != nil {
+	if err := r.redis.RPush(context.Background(), "courses_global", string(body)).Err(); err != nil {
 		return newm_helper.Trace(err)
 	}
 
@@ -33,10 +69,10 @@ func (r *redisCourseRepo) CreateCourse(course entity.CreateCourse, userId string
 }
 
 // Ну и гавно я написал хз как по другому
-func (r *redisCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error {
+func (r *redisCourseRepo) UpdateGlobalCourseByParam(course entity.UpdateCourse) error {
 	var courseFromRedis entity.UpdateCourse
 
-	c, err := r.redis.LRange(context.Background(), "courses", 0, -1).Result()
+	c, err := r.redis.LRange(context.Background(), "courses_global", 0, -1).Result()
 	if err != nil {
 		return newm_helper.Trace(err)
 	}
@@ -94,7 +130,7 @@ func (r *redisCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error 
 				return newm_helper.Trace(err)
 			}
 
-			if err := r.redis.LSet(context.Background(), "courses", int64(i), jsonCourse).Err(); err != nil {
+			if err := r.redis.LSet(context.Background(), "courses_global", int64(i), jsonCourse).Err(); err != nil {
 				return newm_helper.Trace(err)
 			}
 
@@ -105,10 +141,10 @@ func (r *redisCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error 
 	return nil
 }
 
-func (r *redisCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
+func (r *redisCourseRepo) UpdateGlobalCourse(course entity.UpdateCourse) error {
 	var courseFromRedis entity.UpdateCourse
 
-	c, err := r.redis.LRange(context.Background(), "courses", 0, -1).Result()
+	c, err := r.redis.LRange(context.Background(), "courses_global", 0, -1).Result()
 	if err != nil {
 		return newm_helper.Trace(err)
 	}
@@ -136,7 +172,7 @@ func (r *redisCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 				return newm_helper.Trace(err)
 			}
 
-			if err := r.redis.LSet(context.Background(), "courses", int64(i), jsonCourse).Err(); err != nil {
+			if err := r.redis.LSet(context.Background(), "courses_global", int64(i), jsonCourse).Err(); err != nil {
 				return newm_helper.Trace(err)
 			}
 
@@ -147,10 +183,10 @@ func (r *redisCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 	return nil
 }
 
-func (r *redisCourseRepo) GetCourses(searchValue string) ([]entity.CourseList, error) {
+func (r *redisCourseRepo) GetGlobalCourses(searchValue string) ([]entity.CourseList, error) {
 	var courses []entity.CourseList
 
-	c, err := r.redis.LRange(context.Background(), "courses", 0, -1).Result()
+	c, err := r.redis.LRange(context.Background(), "courses_global", 0, -1).Result()
 	if err != nil {
 		return nil, newm_helper.Trace(err)
 	}

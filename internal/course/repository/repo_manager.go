@@ -11,9 +11,11 @@ import (
 type ICourseRepo interface {
 	GetShortCourses(searchValue string) ([]entity.CourseList, error)
 	GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error)
-	CreateCourse(course entity.CreateCourse, userId string) error
+	CreateCourse(course entity.CreateCourse) error
 	UpdateCourse(course entity.UpdateCourse) error
 	UpdateCourseByParam(course entity.UpdateCourse) error
+	CreateCacheCourses(courses []entity.CreateCourse, keyPrefix string) error
+	GetCacheCourses(searchValue string) ([]entity.CourseList, error)
 }
 
 type IPsqlCourseRepo interface {
@@ -24,9 +26,12 @@ type IPsqlCourseRepo interface {
 }
 
 type IRedisCourseRepo interface {
-	GetCourses(searchValue string) ([]entity.CourseList, error)
-	UpdateCourse(course entity.UpdateCourse) error
-	CreateCourse(course entity.CreateCourse, user_id string) error
+	GetGlobalCourses(searchValue string) ([]entity.CourseList, error)
+	UpdateGlobalCourse(course entity.UpdateCourse) error
+	CreateGlobalCourse(course entity.CreateCourse) error
+	UpdateGlobalCourseByParam(course entity.UpdateCourse) error
+	CreateCacheCourses(courses []entity.CreateCourse, keyPrefix string) error
+	GetCacheCourses(searchValue string) ([]entity.CourseList, error)
 }
 
 type IHttpCourseRepo interface {
@@ -46,8 +51,20 @@ func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 	return &managerCourseRepo{psql: psqlRepo, redis: redisRepo, http: httpRepo}
 }
 
+func (r *managerCourseRepo) GetCacheCourses(searchValue string) ([]entity.CourseList, error) {
+	return r.redis.GetCacheCourses(searchValue)
+}
+
+func (r *managerCourseRepo) CreateCacheCourses(courses []entity.CreateCourse, keyPrefix string) error {
+	return r.redis.CreateCacheCourses(courses, keyPrefix)
+}
+
 func (r *managerCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error {
-	return r.psql.UpdateCourseByParam(course)
+	if err := r.psql.UpdateCourseByParam(course); err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return r.redis.UpdateGlobalCourseByParam(course)
 }
 
 func (r *managerCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
@@ -55,20 +72,27 @@ func (r *managerCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 		return newm_helper.Trace(err)
 	}
 
-	return r.redis.UpdateCourse(course)
+	return r.redis.UpdateGlobalCourse(course)
 }
 
-func (r *managerCourseRepo) CreateCourse(course entity.CreateCourse, userId string) error {
-	if err := r.redis.CreateCourse(course, userId); err != nil {
+func (r *managerCourseRepo) CreateCourse(course entity.CreateCourse) error {
+	if err := r.psql.CreateCourse(course); err != nil {
+		if err.Error() == "created" {
+			return nil
+		}
 		return newm_helper.Trace(err)
 	}
 
-	return r.psql.CreateCourse(course)
+	if err := r.redis.CreateGlobalCourse(course); err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return nil
 }
 
 func (r *managerCourseRepo) GetShortCourses(searchValue string) ([]entity.CourseList, error) {
 
-	courses, err := r.redis.GetCourses(searchValue)
+	courses, err := r.redis.GetGlobalCourses(searchValue)
 	if err != nil {
 		return nil, newm_helper.Trace(err)
 	}

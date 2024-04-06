@@ -3,7 +3,7 @@ package entity
 import "searcher/internal/course/model/dto"
 
 type CourseList struct {
-	Id          int
+	Id int
 	Name        string
 	Description string
 	Language    string

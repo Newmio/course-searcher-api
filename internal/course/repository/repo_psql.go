@@ -115,18 +115,23 @@ func (r *psqlCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 }
 
 func (r *psqlCourseRepo) CreateCourse(course entity.CreateCourse) error {
-	str := `select * from courses where link = $1`
+	var id int
 
-	_, err := r.psql.Exec(str, course.Link)
+	str := `select id from courses where link = $1`
+
+	err := r.psql.QueryRow(str, course.Link).Scan(&id)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return newm_helper.Trace(err, str)
 		}
-		return nil
+	}
+
+	if id != 0 {
+		return fmt.Errorf("created")
 	}
 
 	str = `insert into courses(name, description, language, author, duration, rating, platform, money, link, active, date_create) 
-	values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
+			values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
 
 	result, err := r.psql.Exec(str, course.Name, course.Description, course.Language, course.Author,
 		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.Active, course.DateCreate)
@@ -149,7 +154,7 @@ func (r *psqlCourseRepo) CreateCourse(course entity.CreateCourse) error {
 func (r *psqlCourseRepo) GetCourses(searchValue string) ([]entity.CourseList, error) {
 	var courses []entity.CourseList
 
-	searchStr := "%"+strings.Replace(searchValue, " ", "%", -1)+"%"
+	searchStr := "%" + strings.Replace(searchValue, " ", "%", -1) + "%"
 
 	str := `select * from courses where name ilike $1 or description ilike $2 and active = true`
 

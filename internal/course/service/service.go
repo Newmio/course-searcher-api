@@ -42,7 +42,7 @@ var WebCourseParams = map[string]WebCourseParam{
 
 type ICourseService interface {
 	GetLongCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
-	CreateCourse(course dto.CreateCourseRequest, userId string) error
+	CreateCourse(course dto.CreateCourseRequest) error
 	UpdateCourse(course dto.PutUpdateCourseRequest) error
 	UpdateCourseByParam(course dto.PutUpdateCourseRequest) error
 	GetShortCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
@@ -64,8 +64,8 @@ func (s *courseService) UpdateCourse(course dto.PutUpdateCourseRequest) error {
 	return s.r.UpdateCourse(entity.NewUpdateCourse(course))
 }
 
-func (s *courseService) CreateCourse(course dto.CreateCourseRequest, userId string) error {
-	return s.r.CreateCourse(entity.NewCreateCourse(course), userId)
+func (s *courseService) CreateCourse(course dto.CreateCourseRequest) error {
+	return s.r.CreateCourse(entity.NewCreateCourse(course))
 }
 
 func (s *courseService) GetShortCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error) {
@@ -80,6 +80,16 @@ func (s *courseService) GetShortCourses(searchValue dto.GetCourseRequest) (dto.C
 func (s *courseService) GetLongCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error) {
 	var param newm_helper.Param
 	var courses []dto.CourseList
+
+	cacheCourses, err := s.r.GetCacheCourses(fmt.Sprintf("%s_%d", searchValue.SearchValue, searchValue.Page))
+	if err != nil {
+		return dto.CourseListResponse{}, newm_helper.Trace(err)
+	}
+
+	if len(cacheCourses) > 0 {
+		return entity.NewCourseListResponse(cacheCourses), nil
+	}
+
 	fields := make(map[string]WebCourseParam)
 
 	for key, value := range WebCourseParams {
@@ -97,8 +107,6 @@ func (s *courseService) GetLongCourses(searchValue dto.GetCourseRequest) (dto.Co
 		param.RequestId = newm_helper.NewRequestId()
 		param.Url = strings.Replace(value.Url, PAGE, fmt.Sprintf("%d", searchValue.Page), -1)
 		param.Url = strings.Replace(param.Url, SEARCH_VALUE, searchValue.SearchValue, -1)
-
-		fmt.Println(param.Url)
 
 		body, err := s.r.GetHtmlCourseInWeb(param)
 		if err != nil {
@@ -128,6 +136,10 @@ func (s *courseService) GetLongCourses(searchValue dto.GetCourseRequest) (dto.Co
 
 	}
 
+	if err := s.r.CreateCacheCourses(entity.NewCreateCourses(courses), fmt.Sprintf("%s_%d", searchValue.SearchValue, searchValue.Page)); err != nil {
+		return dto.CourseListResponse{}, newm_helper.Trace(err)
+	}
+
 	return dto.NewCourseListResponse(courses), nil
 }
 
@@ -143,6 +155,7 @@ func (s *courseService) findCourseInHtml(node *goquery.Selection, fields map[str
 		if len(parts) == 1 {
 			selector = parts[0]
 			attr = ""
+
 		} else {
 			selector = parts[0]
 			attr = parts[1]

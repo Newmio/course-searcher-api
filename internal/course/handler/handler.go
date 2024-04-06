@@ -103,8 +103,6 @@ func (h *Handler) UpdateCourse(c echo.Context) error {
 func (h *Handler) CreateCourse(c echo.Context) error {
 	var course dto.CreateCourseRequest
 
-	userId := c.Get("userId").(string)
-
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
@@ -113,7 +111,7 @@ func (h *Handler) CreateCourse(c echo.Context) error {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	err := h.s.CreateCourse(course, userId)
+	err := h.s.CreateCourse(course)
 	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
