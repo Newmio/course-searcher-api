@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"searcher/internal/course/model/entity"
 	"strings"
 
@@ -16,6 +17,19 @@ type redisCourseRepo struct {
 
 func NewRedisCourseRepo(redis *redis.Client) IRedisCourseRepo {
 	return &redisCourseRepo{redis: redis}
+}
+
+func (r *redisCourseRepo) CreateCourse(course entity.CreateCourse, userId string) error {
+	body, err := json.Marshal(course)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	if err := r.redis.RPush(context.Background(), fmt.Sprintf("courses_%s", userId), string(body)).Err(); err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return nil
 }
 
 // Ну и гавно я написал хз как по другому

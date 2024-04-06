@@ -11,7 +11,7 @@ import (
 type ICourseRepo interface {
 	GetShortCourses(searchValue string) ([]entity.CourseList, error)
 	GetHtmlCourseInWeb(param newm_helper.Param) ([]byte, error)
-	CreateCourse(course entity.CreateCourse) error
+	CreateCourse(course entity.CreateCourse, userId string) error
 	UpdateCourse(course entity.UpdateCourse) error
 	UpdateCourseByParam(course entity.UpdateCourse) error
 }
@@ -26,6 +26,7 @@ type IPsqlCourseRepo interface {
 type IRedisCourseRepo interface {
 	GetCourses(searchValue string) ([]entity.CourseList, error)
 	UpdateCourse(course entity.UpdateCourse) error
+	CreateCourse(course entity.CreateCourse, user_id string) error
 }
 
 type IHttpCourseRepo interface {
@@ -57,7 +58,11 @@ func (r *managerCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 	return r.redis.UpdateCourse(course)
 }
 
-func (r *managerCourseRepo) CreateCourse(course entity.CreateCourse) error {
+func (r *managerCourseRepo) CreateCourse(course entity.CreateCourse, userId string) error {
+	if err := r.redis.CreateCourse(course, userId); err != nil {
+		return newm_helper.Trace(err)
+	}
+
 	return r.psql.CreateCourse(course)
 }
 

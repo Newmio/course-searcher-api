@@ -9,11 +9,15 @@ import (
 type IUserRepo interface {
 	CreateUser(user entity.CreateUser) error
 	GetUser(login, password string) (entity.GetUser, error)
+	UpdateUser(user entity.UpdateUser) error
+	UpdatePassword(user entity.UpdateUserPassword) error
 }
 
 type IPsqlUserRepo interface {
 	CreateUser(user entity.CreateUser) error
 	GetUser(login, password string) (entity.GetUser, error)
+	UpdateUser(user entity.UpdateUser) error
+	UpdatePassword(user entity.UpdateUserPassword) error
 }
 
 type managerUserRepo struct {
@@ -23,6 +27,14 @@ type managerUserRepo struct {
 func NewManagerUserRepo(psql *sqlx.DB) IUserRepo {
 	psqlRepo := NewPsqlUserRepo(psql)
 	return &managerUserRepo{psql: psqlRepo}
+}
+
+func (r *managerUserRepo) UpdatePassword(user entity.UpdateUserPassword) error {
+	return r.psql.UpdatePassword(user)
+}
+
+func (r *managerUserRepo) UpdateUser(user entity.UpdateUser) error {
+	return r.psql.UpdateUser(user)
 }
 
 func (r *managerUserRepo) GetUser(login, password string) (entity.GetUser, error) {

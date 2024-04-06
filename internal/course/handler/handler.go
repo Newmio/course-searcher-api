@@ -26,6 +26,7 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 			get := course.Group("/get")
 			{
 				get.POST("/long", h.GetLongCourses)
+				get.POST("/short", h.GetShortCourses)
 			}
 
 			course.POST("/create", h.CreateCourse)
@@ -33,6 +34,42 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 			course.PATCH("/update_by_param", h.UpdateCourseByParam)
 		}
 	}
+}
+
+func (h *Handler) GetShortCourses(c echo.Context) error {
+	var course dto.GetCourseRequest
+	accept := c.Request().Header.Get("Accept")
+
+	if err := c.Bind(&course); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if accept == "" {
+		c.JSON(400, newm_helper.ErrorResponse("Accept header is required"))
+	}
+
+	if err := course.Validate(); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	courses, err := h.s.GetShortCourses(course)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if accept == "application/xml" {
+		return c.XML(200, courses)
+
+	} else if accept == "text/html" {
+		strHtml, err := newm_helper.RenderHtml("static/course/course_template.html", courses)
+		if err != nil {
+			fmt.Println(err)
+			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+		}
+		return c.HTML(200, strHtml)
+	}
+
+	return c.JSON(200, courses)
 }
 
 func (h *Handler) UpdateCourseByParam(c echo.Context) error {
@@ -66,6 +103,8 @@ func (h *Handler) UpdateCourse(c echo.Context) error {
 func (h *Handler) CreateCourse(c echo.Context) error {
 	var course dto.CreateCourseRequest
 
+	userId := c.Get("userId").(string)
+
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
@@ -74,7 +113,7 @@ func (h *Handler) CreateCourse(c echo.Context) error {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	err := h.s.CreateCourse(course)
+	err := h.s.CreateCourse(course, userId)
 	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}

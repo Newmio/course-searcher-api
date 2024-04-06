@@ -14,8 +14,8 @@ type CourseList struct {
 	Money       string
 	Link        string
 	Active      bool
-	DateCreate  string
-	DateUpdate  string
+	DateCreate  string `db:"date_create"`
+	DateUpdate  string `db:"date_update"`
 }
 
 func newCourseList(coruses []CourseList) []dto.CourseList {

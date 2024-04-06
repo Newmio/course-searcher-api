@@ -7,7 +7,6 @@ type GetUser struct {
 	Email string
 	Phone string
 	Role string
-	Active bool
 	DateCreate string `db:"date_create"`
 	DateUpdate string `db:"date_update"`
 }

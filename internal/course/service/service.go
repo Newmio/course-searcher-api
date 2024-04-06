@@ -42,9 +42,10 @@ var WebCourseParams = map[string]WebCourseParam{
 
 type ICourseService interface {
 	GetLongCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
-	CreateCourse(course dto.CreateCourseRequest) error
+	CreateCourse(course dto.CreateCourseRequest, userId string) error
 	UpdateCourse(course dto.PutUpdateCourseRequest) error
 	UpdateCourseByParam(course dto.PutUpdateCourseRequest) error
+	GetShortCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
 }
 
 type courseService struct {
@@ -63,12 +64,12 @@ func (s *courseService) UpdateCourse(course dto.PutUpdateCourseRequest) error {
 	return s.r.UpdateCourse(entity.NewUpdateCourse(course))
 }
 
-func (s *courseService) CreateCourse(course dto.CreateCourseRequest) error {
-	return s.r.CreateCourse(entity.NewCreateCourse(course))
+func (s *courseService) CreateCourse(course dto.CreateCourseRequest, userId string) error {
+	return s.r.CreateCourse(entity.NewCreateCourse(course), userId)
 }
 
-func (s *courseService) GetShortCourses(searchValue string) (dto.CourseListResponse, error) {
-	courses, err := s.r.GetShortCourses(searchValue)
+func (s *courseService) GetShortCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error) {
+	courses, err := s.r.GetShortCourses(searchValue.SearchValue)
 	if err != nil {
 		return dto.CourseListResponse{}, newm_helper.Trace(err)
 	}

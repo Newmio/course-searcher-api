@@ -1,6 +1,9 @@
 package dto
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type RegisterUserRequest struct {
 	Login    string `json:"login" xml:"login"`
@@ -17,7 +20,9 @@ func (u RegisterUserRequest) Validate() error {
 		return fmt.Errorf("password is empty")
 	}
 
-	if u.Email == "" {
+	if u.Email == "" ||
+		!strings.Contains(u.Email, "@") ||
+		!strings.Contains(u.Email, ".") {
 		return fmt.Errorf("email is empty")
 	}
 

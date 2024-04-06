@@ -18,6 +18,28 @@ func NewPsqlUserRepo(db *sqlx.DB) IPsqlUserRepo {
 	return r
 }
 
+func (r *psqlUserRepo) UpdatePassword(user entity.UpdateUserPassword) error {
+	str := `update users set password = $1 where id = $2`
+
+	_, err := r.db.Exec(str, user.Password, user.Id)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
+func (r *psqlUserRepo) UpdateUser(user entity.UpdateUser) error {
+	str := `update users set email = $1, phone = $2 where id = $3`
+
+	_, err := r.db.Exec(str, user.Email, user.Phone, user.Id)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
 func (r *psqlUserRepo) GetUser(login, password string) (entity.GetUser, error) {
 	var user entity.GetUser
 

@@ -10,9 +10,7 @@ func (db *psqlUserRepo) initTables() error {
 		email text unique not null,
 		phone text default '',
 		role text not null,
-		active boolean default true,
-		date_create timestamp default now(),
-		date_update timestamp default now()
+		date_create timestamp default now()
 	)`
 
 	_, err := db.db.Exec(str)
@@ -29,8 +27,7 @@ func (db *psqlUserRepo) initTables() error {
 		street text default '',
 		university_role text not null,
 		id_user int not null,
-		date_create timestamp default now(),
-		date_update timestamp default now()
+		date_create timestamp default now()
 	)`
 
 	_, err = db.db.Exec(str)

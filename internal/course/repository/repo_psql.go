@@ -149,9 +149,11 @@ func (r *psqlCourseRepo) CreateCourse(course entity.CreateCourse) error {
 func (r *psqlCourseRepo) GetCourses(searchValue string) ([]entity.CourseList, error) {
 	var courses []entity.CourseList
 
-	str := `select * from courses where name ilike $1 and active = true`
+	searchStr := "%"+strings.Replace(searchValue, " ", "%", -1)+"%"
 
-	if err := r.psql.Select(&courses, str, "%"+strings.Replace(searchValue, " ", "%", -1)+"%"); err != nil {
+	str := `select * from courses where name ilike $1 or description ilike $2 and active = true`
+
+	if err := r.psql.Select(&courses, str, searchStr, searchStr); err != nil {
 		return nil, newm_helper.Trace(err, str)
 	}
 

@@ -7,7 +7,5 @@ import (
 )
 
 func main() {
-	if err := app.InitProject(); err != nil {
-		panic(err)
-	}
+	app.InitProject().Run()
 }

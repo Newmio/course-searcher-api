@@ -34,6 +34,8 @@ type tokenClaims struct {
 type IUserService interface {
 	CreateUser(user dto.RegisterUserRequest) error
 	Login(userReq dto.LoginUserRequest) (dto.LoginUserResponse, error)
+	UpdateUser(user dto.UpdateUserRequest) error
+	UpdatePassword(user dto.UpdateUserPasswordRequest) error
 }
 
 type userService struct {
@@ -42,6 +44,15 @@ type userService struct {
 
 func NewUserService(r repository.IUserRepo) IUserService {
 	return &userService{r: r}
+}
+
+func (s *userService) UpdatePassword(user dto.UpdateUserPasswordRequest) error {
+	user.Password = generatePasswordHash(user.Password)
+	return s.r.UpdatePassword(entity.NewUpdateUserPassword(user))
+}
+
+func (s *userService) UpdateUser(user dto.UpdateUserRequest) error {
+	return s.r.UpdateUser(entity.NewUpdateUser(user))
 }
 
 func (s *userService) Login(userReq dto.LoginUserRequest) (dto.LoginUserResponse, error) {

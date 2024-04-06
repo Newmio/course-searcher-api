@@ -1,7 +1,10 @@
 package app
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
 	"searcher/internal/app/db/postgres"
 	"searcher/internal/app/db/redis"
 	handlerCourse "searcher/internal/course/handler"
@@ -12,28 +15,74 @@ import (
 	handlerUser "searcher/internal/user/handler"
 	repoUser "searcher/internal/user/repository"
 	serviceUser "searcher/internal/user/service"
+	"syscall"
+	"time"
+
+	redisClient "github.com/go-redis/redis/v8"
 
 	"github.com/fatih/color"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.uber.org/zap"
 )
 
-func InitProject() error {
+type App struct {
+	Psql  *sqlx.DB
+	Redis *redisClient.Client
+	Log   *zap.Logger
+	Echo  *echo.Echo
+}
+
+func InitProject() *App {
 
 	dbPsql, err := postgres.OpenDb()
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	dbRedis, err := redis.OpenDb()
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	e := echo.New()
+	log, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
 
-	e.Use(middleware.Recover())
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+	return &App{
+		Psql:  dbPsql,
+		Redis: dbRedis,
+		Log:   log,
+		Echo:  echo.New(),
+	}
+}
+
+func (app *App) Run() {
+	app.initService()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM)
+	signal.Notify(quit, syscall.SIGINT)
+
+	go func() {
+		<-quit
+		app.Log.Info("Server is shutting down...")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancel()
+		app.Psql.Close()
+		app.Redis.Close()
+		app.Echo.Shutdown(ctx)
+	}()
+
+	app.Echo.Logger.Fatal(app.Echo.Start(":8088"))
+}
+
+func (app *App) initService() {
+	app.Echo.Use(middleware.Recover())
+	app.Echo.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format:           " [ ${time_custom} ]  ${latency_human}  ${status}   ${method}   ${uri}\n\n",
 		CustomTimeFormat: "2006/01/02 15:04:05",
 		Output:           color.Output,
@@ -45,24 +94,22 @@ func InitProject() error {
 		"api": middlewareHandler.ParseToken,
 	}
 
-	userRepo := repoUser.NewPsqlUserRepo(dbPsql)
+	userRepo := repoUser.NewPsqlUserRepo(app.Psql)
 	userService := serviceUser.NewUserService(userRepo)
 	userHandler := handlerUser.NewHandler(userService)
-	userHandler.InitUserRoutes(e, middlewares)
+	userHandler.InitUserRoutes(app.Echo, middlewares)
 
-	managerCourseRepo := repoCourse.NewManagerCourseRepo(dbPsql, dbRedis)
+	managerCourseRepo := repoCourse.NewManagerCourseRepo(app.Psql, app.Redis)
 	courseService := serviceCourse.NewCourseService(managerCourseRepo)
 	courseHandler := handlerCourse.NewHandler(courseService)
-	courseHandler.InitCourseRoutes(e, middlewares)
+	courseHandler.InitCourseRoutes(app.Echo, middlewares)
 
-	e.Group("/api", middlewareHandler.ParseToken)
-
-	e.GET("/", func(c echo.Context) error {
+	app.Echo.GET("/", func(c echo.Context) error {
 		return c.File("static/index.html")
 	})
 
 	color.New(color.BgMagenta, color.Bold).Println()
-	for _, value := range e.Routes() {
+	for _, value := range app.Echo.Routes() {
 		var customColor color.Attribute
 
 		switch value.Method {
@@ -79,8 +126,4 @@ func InitProject() error {
 		color.New(customColor, color.Bold).Print(fmt.Sprintf("\n\t%s : %s", value.Path, value.Method))
 	}
 	color.New(color.BgMagenta, color.Bold).Println()
-
-	e.Logger.Fatal(e.Start(":8088"))
-
-	return nil
 }
