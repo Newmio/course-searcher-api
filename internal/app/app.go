@@ -10,6 +10,9 @@ import (
 	handlerCourse "searcher/internal/course/handler"
 	repoCourse "searcher/internal/course/repository"
 	serviceCourse "searcher/internal/course/service"
+	handlerFile "searcher/internal/file/handler"
+	repoFile "searcher/internal/file/repository"
+	serviceFile "searcher/internal/file/service"
 	handlerMiddleware "searcher/internal/middleware/handler"
 	serviceMiddleware "searcher/internal/middleware/service"
 	handlerUser "searcher/internal/user/handler"
@@ -94,8 +97,8 @@ func (app *App) initService() {
 		"api": middlewareHandler.ParseToken,
 	}
 
-	userRepo := repoUser.NewPsqlUserRepo(app.Psql)
-	userService := serviceUser.NewUserService(userRepo)
+	managerUserRepo := repoUser.NewManagerUserRepo(app.Psql)
+	userService := serviceUser.NewUserService(managerUserRepo)
 	userHandler := handlerUser.NewHandler(userService)
 	userHandler.InitUserRoutes(app.Echo, middlewares)
 
@@ -103,6 +106,11 @@ func (app *App) initService() {
 	courseService := serviceCourse.NewCourseService(managerCourseRepo)
 	courseHandler := handlerCourse.NewHandler(courseService)
 	courseHandler.InitCourseRoutes(app.Echo, middlewares)
+
+	managerFileRepo := repoFile.NewManagerFileRepo(app.Psql)
+	FileService := serviceFile.NewFileService(managerFileRepo, managerUserRepo)
+	FileHandler := handlerFile.NewHandler(FileService)
+	FileHandler.InitFileRoutes(app.Echo, middlewares)
 
 	app.Echo.GET("/", func(c echo.Context) error {
 		return c.File("static/index.html")
