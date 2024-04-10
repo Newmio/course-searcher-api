@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"searcher/internal/file/model/dto"
+	"searcher/internal/file/model/entity"
 	rFile "searcher/internal/file/repository"
 	rUser "searcher/internal/user/repository"
 	"time"
@@ -12,6 +13,8 @@ import (
 )
 
 type IFileService interface {
+	CreateReportFile(file dto.CreateFileRequest) error
+	CreateEducationFile(file dto.CreateFileRequest) error
 }
 
 type fileService struct {
@@ -23,16 +26,27 @@ func NewFileService(rFile rFile.IFileRepo, rUser rUser.IUserRepo) IFileService {
 	return &fileService{rFile: rFile, rUser: rUser}
 }
 
-func (s *fileService) CreateEducationFile(file dto.CreateFileRequest) error {
+func (s *fileService) CreateReportFile(file dto.CreateFileRequest) error {
 
-	if err := createFile(file.FileBytes, file.FileType); err != nil{
+	dir, err := createFile(file.FileBytes, file.FileType)
+	if err != nil {
 		return newm_helper.Trace(err)
 	}
 
-	return nil
+	return s.rFile.CreateReportFile(entity.NewCreateFile(dir))
 }
 
-func createFile(bodyBytes []byte, fileType string) error {
+func (s *fileService) CreateEducationFile(file dto.CreateFileRequest) error {
+
+	dir, err := createFile(file.FileBytes, file.FileType)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return s.rFile.CreateEducationFile(entity.NewCreateFile(dir))
+}
+
+func createFile(bodyBytes []byte, fileType string) (string, error) {
 	for {
 		name := fmt.Sprint(time.Now().UnixNano())
 
@@ -40,17 +54,19 @@ func createFile(bodyBytes []byte, fileType string) error {
 			continue
 		}
 
-		file, err := os.Create(name + "." + fileType)
+		dir := fmt.Sprintf("media/%s.%s", name, fileType)
+
+		file, err := os.Create(dir)
 		if err != nil {
-			return newm_helper.Trace(err)
+			return "", newm_helper.Trace(err)
 		}
 
 		_, err = file.Write(bodyBytes)
 		if err != nil {
-			return newm_helper.Trace(err)
+			return "", newm_helper.Trace(err)
 		}
 
-		return nil
+		return dir, nil
 	}
 }
 
