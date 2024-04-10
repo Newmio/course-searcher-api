@@ -4,6 +4,7 @@ import (
 	"io"
 	"searcher/internal/file/model/dto"
 	"searcher/internal/file/service"
+	"strconv"
 
 	"github.com/Newmio/newm_helper"
 	"github.com/labstack/echo/v4"
@@ -18,7 +19,86 @@ func NewHandler(s service.IFileService) *Handler {
 }
 
 func (h *Handler) InitFileRoutes(e *echo.Echo, middlewares map[string]echo.MiddlewareFunc) {
+	api := e.Group("/api", middlewares["api"])
+	{
+		file := api.Group("/file")
+		{
+			upload := file.Group("/upload")
+			{
+				upload.POST("/report", h.UploadReportFile)
+				upload.POST("/education", h.UploadEducationFile)
+			}
 
+			get := file.Group("/get")
+			{
+				get.GET("/report_info", h.GetReportFilesInfoByUserId)
+				get.GET("/education_info", h.GetEducationFilesInfoByUserId)
+			}
+		}
+	}
+}
+
+func (h *Handler) GetReportFilesInfoByUserId(c echo.Context) error {
+	getUserId, err := strconv.Atoi(c.QueryParam("user_id"))
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if c.Get("role").(string) != "admin" || getUserId != c.Get("userId").(int) {
+		return c.JSON(200, nil)
+	}
+
+	files, err := h.s.GetReportFilesInfoByUserId(getUserId)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, files)
+}
+
+func (h *Handler) GetEducationFilesInfoByUserId(c echo.Context) error {
+	getUserId, err := strconv.Atoi(c.QueryParam("user_id"))
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if c.Get("role").(string) != "admin" || getUserId != c.Get("userId").(int) {
+		return c.JSON(200, nil)
+	}
+
+	files, err := h.s.GetEducationFilesInfoByUserId(getUserId)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, files)
+}
+
+func (h *Handler) UploadReportFile(c echo.Context) error {
+	var file dto.CreateFileRequest
+
+	if c.Get("role").(string) != "admin" {
+		return c.JSON(201, nil)
+	}
+
+	file.UserId = c.Get("userId").(int)
+	file.FileType = c.QueryParam("fileType")
+
+	body, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+	file.FileBytes = body
+
+	if err := file.Validate(); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if err := h.s.CreateEducationFile(file); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(201, nil)
 }
 
 func (h *Handler) UploadEducationFile(c echo.Context) error {
@@ -35,6 +115,10 @@ func (h *Handler) UploadEducationFile(c echo.Context) error {
 
 	if err := file.Validate(); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if err := h.s.CreateEducationFile(file); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
 	return c.JSON(201, nil)

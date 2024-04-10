@@ -3,32 +3,62 @@ package repository
 import (
 	"searcher/internal/file/model/entity"
 
+	"github.com/Newmio/newm_helper"
 	"github.com/jmoiron/sqlx"
 )
 
 type IFileRepo interface {
-	CreateReportFile(file entity.CreateFile) error
-	CreateEducationFile(file entity.CreateFile) error
+	CreateReportFile(fileBytes []byte, fileType string) error
+	CreateEducationFile(fileBytes []byte, fileType string) error
+	GetReportFilesInfoByUserId(userId int) ([]entity.GetFile, error)
+	GetEducationFilesInfoByUserId(userId int) ([]entity.GetFile, error)
+}
+
+type IDiskFileRepo interface {
+	CreateFile(bodyBytes []byte, fileType string) (string, error)
+	GetFile(directory string) ([]byte, error)
 }
 
 type IPsqlFileRepo interface {
 	CreateReportFile(file entity.CreateFile) error
 	CreateEducationFile(file entity.CreateFile) error
+	GetReportFilesByUserId(userId int) ([]entity.GetFile, error)
+	GetEducationFilesByUserId(userId int) ([]entity.GetFile, error)
 }
 
 type managerFileRepo struct {
+	disk IDiskFileRepo
 	psql IPsqlFileRepo
 }
 
 func NewManagerFileRepo(psql *sqlx.DB) IFileRepo {
 	psqlRepo := NewPsqlFileRepo(psql)
-	return &managerFileRepo{psql: psqlRepo}
+	diskFileRepo := NewDiskFileRepo()
+	return &managerFileRepo{psql: psqlRepo, disk: diskFileRepo}
 }
 
-func (r *managerFileRepo) CreateReportFile(file entity.CreateFile) error {
-	return r.psql.CreateReportFile(file)
+func (r *managerFileRepo) GetReportFilesInfoByUserId(userId int) ([]entity.GetFile, error) {
+	return r.psql.GetReportFilesByUserId(userId)
 }
 
-func (r *managerFileRepo) CreateEducationFile(file entity.CreateFile) error {
-	return r.psql.CreateEducationFile(file)
+func (r *managerFileRepo) GetEducationFilesInfoByUserId(userId int) ([]entity.GetFile, error) {
+	return r.psql.GetEducationFilesByUserId(userId)
+}
+
+func (r *managerFileRepo) CreateReportFile(fileBytes []byte, fileType string) error {
+	dir, err := r.disk.CreateFile(fileBytes, fileType)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return r.psql.CreateReportFile(entity.NewCreateFile(dir))
+}
+
+func (r *managerFileRepo) CreateEducationFile(fileBytes []byte, fileType string) error {
+	dir, err := r.disk.CreateFile(fileBytes, fileType)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return r.psql.CreateEducationFile(entity.NewCreateFile(dir))
 }

@@ -17,6 +17,68 @@ func NewPsqlFileRepo(db *sqlx.DB) IPsqlFileRepo {
 	return r
 }
 
+func (r *psqlFileRepo) GetEducationFilesByUserId(userId int) ([]entity.GetFile, error) {
+	var fileUser []entity.GetEducationFileUser
+	var files []entity.GetFile
+
+	str := "select * from education_file_user where id_user = $1"
+
+	if err := r.db.Select(&fileUser, str, userId); err != nil {
+		return nil, newm_helper.Trace(err, str)
+	}
+
+	str = "select * from education_files where id = $1"
+
+	stmt, err := r.db.Preparex(str)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+	defer stmt.Close()
+
+	var file entity.GetFile
+
+	for _, v := range fileUser {
+		if err := stmt.Get(&file, v.IdEducationFile); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		files = append(files, file)
+	}
+
+	return files, nil
+}
+
+func (r *psqlFileRepo) GetReportFilesByUserId(userId int) ([]entity.GetFile, error) {
+	var fileUser []entity.GetReportFileUser
+	var files []entity.GetFile
+
+	str := "select * from report_file_user where id_user = $1"
+
+	if err := r.db.Select(&fileUser, str, userId); err != nil {
+		return nil, newm_helper.Trace(err, str)
+	}
+
+	str = "select * from report_files where id = $1"
+
+	stmt, err := r.db.Preparex(str)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+	defer stmt.Close()
+
+	var file entity.GetFile
+
+	for _, v := range fileUser {
+		if err := stmt.Get(&file, v.IdReportFile); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		files = append(files, file)
+	}
+
+	return files, nil
+}
+
 func (r *psqlFileRepo) CreateReportFile(file entity.CreateFile) error {
 	var reportId int
 
