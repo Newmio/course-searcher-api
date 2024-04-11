@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"searcher/internal/file/model/entity"
 
 	"github.com/Newmio/newm_helper"
@@ -15,6 +16,34 @@ func NewPsqlFileRepo(db *sqlx.DB) IPsqlFileRepo {
 	r := &psqlFileRepo{db: db}
 	r.initTables()
 	return r
+}
+
+func (r *psqlFileRepo) GetEducationFileById(id int) (entity.GetFile, error) {
+	var file entity.GetFile
+
+	str := "select * from education_files where id = $1"
+
+	if err := r.db.Get(&file, str, id); err != nil {
+		if err != sql.ErrNoRows {
+			return entity.GetFile{}, newm_helper.Trace(err, str)
+		}
+	}
+
+	return file, nil
+}
+
+func (r *psqlFileRepo) GetReportFileById(id int) (entity.GetFile, error) {
+	var file entity.GetFile
+
+	str := "select * from report_files where id = $1"
+
+	if err := r.db.Get(&file, str, id); err != nil {
+		if err != sql.ErrNoRows {
+			return entity.GetFile{}, newm_helper.Trace(err, str)
+		}
+	}
+
+	return file, nil
 }
 
 func (r *psqlFileRepo) GetEducationFilesByUserId(userId int) ([]entity.GetFile, error) {

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"searcher/internal/file/model/entity"
 
 	"github.com/Newmio/newm_helper"
@@ -12,6 +13,8 @@ type IFileRepo interface {
 	CreateEducationFile(fileBytes []byte, fileType string) error
 	GetReportFilesInfoByUserId(userId int) ([]entity.GetFile, error)
 	GetEducationFilesInfoByUserId(userId int) ([]entity.GetFile, error)
+	GetReportFileById(fileId int) ([]byte, error)
+	GetEducationFileById(fileId int) ([]byte, error)
 }
 
 type IDiskFileRepo interface {
@@ -24,6 +27,8 @@ type IPsqlFileRepo interface {
 	CreateEducationFile(file entity.CreateFile) error
 	GetReportFilesByUserId(userId int) ([]entity.GetFile, error)
 	GetEducationFilesByUserId(userId int) ([]entity.GetFile, error)
+	GetReportFileById(id int) (entity.GetFile, error)
+	GetEducationFileById(id int) (entity.GetFile, error)
 }
 
 type managerFileRepo struct {
@@ -35,6 +40,24 @@ func NewManagerFileRepo(psql *sqlx.DB) IFileRepo {
 	psqlRepo := NewPsqlFileRepo(psql)
 	diskFileRepo := NewDiskFileRepo()
 	return &managerFileRepo{psql: psqlRepo, disk: diskFileRepo}
+}
+
+func (r *managerFileRepo) GetEducationFileById(fileId int) ([]byte, error) {
+	file, err := r.psql.GetEducationFileById(fileId)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	return r.disk.GetFile(fmt.Sprintf("%s/%s.%s", file.Directory, file.Name, file.Type))
+}
+
+func (r *managerFileRepo) GetReportFileById(fileId int) ([]byte, error) {
+	file, err := r.psql.GetReportFileById(fileId)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	return r.disk.GetFile(fmt.Sprintf("%s/%s.%s", file.Directory, file.Name, file.Type))
 }
 
 func (r *managerFileRepo) GetReportFilesInfoByUserId(userId int) ([]entity.GetFile, error) {

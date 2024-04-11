@@ -11,6 +11,8 @@ type IFileService interface {
 	CreateEducationFile(file dto.CreateFileRequest) error
 	GetReportFilesInfoByUserId(userId int) ([]dto.GetFileResponse, error)
 	GetEducationFilesInfoByUserId(userId int) ([]dto.GetFileResponse, error)
+	GetReportFileById(fileId int) ([]byte, error)
+	GetEducationFileById(fileId int) ([]byte, error)
 }
 
 type fileService struct {
@@ -20,6 +22,14 @@ type fileService struct {
 
 func NewFileService(rFile rFile.IFileRepo, rUser rUser.IUserRepo) IFileService {
 	return &fileService{rFile: rFile, rUser: rUser}
+}
+
+func (s *fileService) GetEducationFileById(fileId int) ([]byte, error) {
+	return s.rFile.GetEducationFileById(fileId)
+}
+
+func (s *fileService) GetReportFileById(fileId int) ([]byte, error) {
+	return s.rFile.GetReportFileById(fileId)
 }
 
 func (s *fileService) GetEducationFilesInfoByUserId(userId int) ([]dto.GetFileResponse, error) {
