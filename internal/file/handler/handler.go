@@ -43,8 +43,48 @@ func (h *Handler) InitFileRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 					education.GET("/by_id", h.GetEducationFileById)
 				}
 			}
+
+			delete := file.Group("/delete")
+			{
+				delete.DELETE("/report", h.DeleteReportFile)
+				delete.DELETE("/education", h.DeleteEducationFile)
+			}
 		}
 	}
+}
+
+func (h *Handler) DeleteEducationFile(c echo.Context) error {
+	fileId, err := strconv.Atoi(c.QueryParam("file_id"))
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if c.Get("role").(string) != "admin" {
+		return c.JSON(200, nil)
+	}
+
+	if err := h.s.DeleteEducationFile(fileId); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, nil)
+}
+
+func (h *Handler) DeleteReportFile(c echo.Context) error {
+	fileId, err := strconv.Atoi(c.QueryParam("file_id"))
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if c.Get("role").(string) != "admin" {
+		return c.JSON(200, nil)
+	}
+
+	if err := h.s.DeleteReportFile(fileId); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, nil)
 }
 
 func (h *Handler) GetEducationFileById(c echo.Context) error {

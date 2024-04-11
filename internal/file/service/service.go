@@ -13,6 +13,8 @@ type IFileService interface {
 	GetEducationFilesInfoByUserId(userId int) ([]dto.GetFileResponse, error)
 	GetReportFileById(fileId int) ([]byte, error)
 	GetEducationFileById(fileId int) ([]byte, error)
+	DeleteReportFile(fileId int) error
+	DeleteEducationFile(fileId int) error
 }
 
 type fileService struct {
@@ -22,6 +24,14 @@ type fileService struct {
 
 func NewFileService(rFile rFile.IFileRepo, rUser rUser.IUserRepo) IFileService {
 	return &fileService{rFile: rFile, rUser: rUser}
+}
+
+func (s *fileService) DeleteEducationFile(fileId int) error {
+	return s.rFile.DeleteEducationFile(fileId)
+}
+
+func (s *fileService) DeleteReportFile(fileId int) error {
+	return s.rFile.DeleteReportFile(fileId)
 }
 
 func (s *fileService) GetEducationFileById(fileId int) ([]byte, error) {

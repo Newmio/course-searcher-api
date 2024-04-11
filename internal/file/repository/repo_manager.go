@@ -15,11 +15,14 @@ type IFileRepo interface {
 	GetEducationFilesInfoByUserId(userId int) ([]entity.GetFile, error)
 	GetReportFileById(fileId int) ([]byte, error)
 	GetEducationFileById(fileId int) ([]byte, error)
+	DeleteReportFile(fileId int) error
+	DeleteEducationFile(fileId int) error
 }
 
 type IDiskFileRepo interface {
 	CreateFile(bodyBytes []byte, fileType string) (string, error)
 	GetFile(directory string) ([]byte, error)
+	DeleteFile(directory string) error
 }
 
 type IPsqlFileRepo interface {
@@ -29,6 +32,8 @@ type IPsqlFileRepo interface {
 	GetEducationFilesByUserId(userId int) ([]entity.GetFile, error)
 	GetReportFileById(id int) (entity.GetFile, error)
 	GetEducationFileById(id int) (entity.GetFile, error)
+	DeleteReportFile(id int) (string, error)
+	DeleteEducationFile(id int) (string, error)
 }
 
 type managerFileRepo struct {
@@ -40,6 +45,24 @@ func NewManagerFileRepo(psql *sqlx.DB) IFileRepo {
 	psqlRepo := NewPsqlFileRepo(psql)
 	diskFileRepo := NewDiskFileRepo()
 	return &managerFileRepo{psql: psqlRepo, disk: diskFileRepo}
+}
+
+func (r *managerFileRepo) DeleteEducationFile(fileId int) error {
+	dir, err := r.psql.DeleteEducationFile(fileId)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return r.disk.DeleteFile(dir)
+}
+
+func (r *managerFileRepo) DeleteReportFile(fileId int) error {
+	dir, err := r.psql.DeleteReportFile(fileId)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return r.disk.DeleteFile(dir)
 }
 
 func (r *managerFileRepo) GetEducationFileById(fileId int) ([]byte, error) {

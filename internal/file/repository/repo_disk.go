@@ -16,6 +16,10 @@ func NewDiskFileRepo() IDiskFileRepo {
 	return &diskFileRepo{}
 }
 
+func (r *diskFileRepo) DeleteFile(directory string) error {
+	return os.Remove(directory)
+}
+
 func (r *diskFileRepo) GetFile(directory string) ([]byte, error) {
 	file, err := os.Open(directory)
 	if err != nil {

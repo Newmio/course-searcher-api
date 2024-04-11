@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"searcher/internal/file/model/entity"
 
 	"github.com/Newmio/newm_helper"
@@ -16,6 +17,30 @@ func NewPsqlFileRepo(db *sqlx.DB) IPsqlFileRepo {
 	r := &psqlFileRepo{db: db}
 	r.initTables()
 	return r
+}
+
+func (r *psqlFileRepo) DeleteEducationFile(id int) (string, error) {
+	var directory, name, typee string
+
+	str := "delete from education_files where id = $1 returning directory, name, type"
+
+	if err := r.db.QueryRow(str, id).Scan(&directory, &name, &typee); err != nil {
+		return "", newm_helper.Trace(err, str)
+	}
+
+	return fmt.Sprintf("%s/%s.%s", directory, name, typee), nil
+}
+
+func (r *psqlFileRepo) DeleteReportFile(id int) (string, error) {
+	var directory, name, typee string
+
+	str := "delete from report_files where id = $1 returning directory, name, type"
+
+	if err := r.db.QueryRow(str, id).Scan(&directory, &name, &typee); err != nil {
+		return "", newm_helper.Trace(err, str)
+	}
+
+	return fmt.Sprintf("%s/%s.%s", directory, name, typee), nil
 }
 
 func (r *psqlFileRepo) GetEducationFileById(id int) (entity.GetFile, error) {
