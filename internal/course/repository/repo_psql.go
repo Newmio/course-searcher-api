@@ -16,7 +16,9 @@ type psqlCourseRepo struct {
 
 func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 	r := &psqlCourseRepo{psql: psql}
-	r.initTables()
+	if err := r.initTables(); err != nil{
+		panic(err)
+	}
 	return r
 }
 

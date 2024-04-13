@@ -14,8 +14,21 @@ type psqlUserRepo struct {
 
 func NewPsqlUserRepo(db *sqlx.DB) IPsqlUserRepo {
 	r := &psqlUserRepo{db: db}
-	r.initTables()
+	if err := r.initTables(); err != nil{
+		panic(err)
+	}
 	return r
+}
+
+func (r *psqlUserRepo) UpdateUserRole(role string, userId int)error{
+	str := `update users set role = $1 where id = $2`
+
+	_, err := r.db.Exec(str, role, userId)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
 }
 
 func (r *psqlUserRepo) UpdatePassword(user entity.UpdateUserPassword) error {

@@ -15,32 +15,34 @@ type psqlFileRepo struct {
 
 func NewPsqlFileRepo(db *sqlx.DB) IPsqlFileRepo {
 	r := &psqlFileRepo{db: db}
-	r.initTables()
+	if err := r.initTables(); err != nil{
+		panic(err)
+	}
 	return r
 }
 
 func (r *psqlFileRepo) DeleteEducationFile(id int) (string, error) {
-	var directory, name, typee string
+	var directory, name string
 
-	str := "delete from education_files where id = $1 returning directory, name, type"
+	str := "delete from education_files where id = $1 returning directory, name"
 
-	if err := r.db.QueryRow(str, id).Scan(&directory, &name, &typee); err != nil {
+	if err := r.db.QueryRow(str, id).Scan(&directory, &name); err != nil {
 		return "", newm_helper.Trace(err, str)
 	}
 
-	return fmt.Sprintf("%s/%s.%s", directory, name, typee), nil
+	return fmt.Sprintf("%s/%s", directory, name), nil
 }
 
 func (r *psqlFileRepo) DeleteReportFile(id int) (string, error) {
-	var directory, name, typee string
+	var directory, name string
 
-	str := "delete from report_files where id = $1 returning directory, name, type"
+	str := "delete from report_files where id = $1 returning directory, name"
 
-	if err := r.db.QueryRow(str, id).Scan(&directory, &name, &typee); err != nil {
+	if err := r.db.QueryRow(str, id).Scan(&directory, &name); err != nil {
 		return "", newm_helper.Trace(err, str)
 	}
 
-	return fmt.Sprintf("%s/%s.%s", directory, name, typee), nil
+	return fmt.Sprintf("%s/%s", directory, name), nil
 }
 
 func (r *psqlFileRepo) GetEducationFileById(id int) (entity.GetFile, error) {
@@ -143,6 +145,8 @@ func (r *psqlFileRepo) CreateReportFile(file entity.CreateFile) error {
 		return newm_helper.Trace(err, str)
 	}
 
+	fmt.Println(file.UserId)
+
 	str = `insert into report_file_user(id_report_file, id_user) values($1, $2)`
 
 	_, err = r.db.Exec(str, reportId, file.UserId)
@@ -156,14 +160,14 @@ func (r *psqlFileRepo) CreateReportFile(file entity.CreateFile) error {
 func (r *psqlFileRepo) CreateEducationFile(file entity.CreateFile) error {
 	var educationId int
 
-	str := `insert into educetion_files(name, type, directory, date_create) values($1, $2, $3, $4) returning id`
+	str := `insert into education_files(name, type, directory, date_create) values($1, $2, $3, $4) returning id`
 
 	err := r.db.QueryRow(str, file.Name, file.Type, file.Directory, file.DateCreate).Scan(&educationId)
 	if err != nil {
 		return newm_helper.Trace(err, str)
 	}
 
-	str = `insert into report_file_user(id_report_file, id_user) values($1, $2)`
+	str = `insert into education_file_user(id_education_file, id_user) values($1, $2)`
 
 	_, err = r.db.Exec(str, educationId, file.UserId)
 	if err != nil {

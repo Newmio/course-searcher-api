@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"searcher/internal/file/model/dto"
 	"searcher/internal/file/service"
@@ -173,11 +174,12 @@ func (h *Handler) UploadReportFile(c echo.Context) error {
 	var file dto.CreateFileRequest
 
 	if c.Get("role").(string) != "admin" {
+		fmt.Println("role", c.Get("role"))
 		return c.JSON(201, nil)
 	}
 
 	file.UserId = c.Get("userId").(int)
-	file.FileType = c.QueryParam("fileType")
+	file.FileType = c.QueryParam("file_type")
 
 	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
@@ -189,7 +191,7 @@ func (h *Handler) UploadReportFile(c echo.Context) error {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	if err := h.s.CreateEducationFile(file); err != nil {
+	if err := h.s.CreateReportFile(file); err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
@@ -200,7 +202,7 @@ func (h *Handler) UploadEducationFile(c echo.Context) error {
 	var file dto.CreateFileRequest
 
 	file.UserId = c.Get("userId").(int)
-	file.FileType = c.QueryParam("fileType")
+	file.FileType = c.QueryParam("file_type")
 
 	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {

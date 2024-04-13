@@ -61,9 +61,9 @@ func (s *fileService) GetReportFilesInfoByUserId(userId int) ([]dto.GetFileRespo
 }
 
 func (s *fileService) CreateReportFile(file dto.CreateFileRequest) error {
-	return s.rFile.CreateReportFile(file.FileBytes, file.FileType)
+	return s.rFile.CreateReportFile(file.FileBytes, file.FileType, file.UserId)
 }
 
 func (s *fileService) CreateEducationFile(file dto.CreateFileRequest) error {
-	return s.rFile.CreateEducationFile(file.FileBytes, file.FileType)
+	return s.rFile.CreateEducationFile(file.FileBytes, file.FileType, file.UserId)
 }

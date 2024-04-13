@@ -1,6 +1,8 @@
 package repository
 
-func (r *psqlCourseRepo) initTables() {
+import "github.com/Newmio/newm_helper"
+
+func (r *psqlCourseRepo) initTables() error {
 	str := `create table if not exists courses(
 		id serial primary key,
 		name text not null,
@@ -18,6 +20,8 @@ func (r *psqlCourseRepo) initTables() {
 	)`
 	_, err := r.psql.Exec(str)
 	if err != nil {
-		panic(err)
+		return newm_helper.Trace(err, str)
 	}
+
+	return nil
 }

@@ -39,7 +39,13 @@ func (r *diskFileRepo) CreateFile(bodyBytes []byte, fileType string) (string, er
 
 		t := time.Now()
 
-		dir := fmt.Sprintf("media/%d-%d-%d/%s.%s", t.Day(), t.Month(), t.Year(), name, fileType)
+		dir := fmt.Sprintf("media/%d-%d-%d/", t.Day(), t.Month(), t.Year())
+
+		if err := os.MkdirAll(dir, 0777); err != nil {
+			return "", newm_helper.Trace(err)
+		}
+
+		dir = dir + fmt.Sprintf("%s.%s", name, fileType)
 
 		file, err := os.Create(dir)
 		if err != nil {

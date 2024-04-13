@@ -27,7 +27,7 @@ func (h *Handler) InitUserRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 		{
 			update := user.Group("/update")
 			{
-				update.PUT("", h.UpdateUser)
+				//update.PUT("", h.UpdateUser)
 				update.PATCH("/password", h.UpdatePassword)
 			}
 		}

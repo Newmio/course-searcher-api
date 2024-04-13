@@ -9,8 +9,8 @@ import (
 )
 
 type IFileRepo interface {
-	CreateReportFile(fileBytes []byte, fileType string) error
-	CreateEducationFile(fileBytes []byte, fileType string) error
+	CreateReportFile(fileBytes []byte, fileType string, userId int) error
+	CreateEducationFile(fileBytes []byte, fileType string, userId int) error
 	GetReportFilesInfoByUserId(userId int) ([]entity.GetFile, error)
 	GetEducationFilesInfoByUserId(userId int) ([]entity.GetFile, error)
 	GetReportFileById(fileId int) ([]byte, error)
@@ -71,7 +71,11 @@ func (r *managerFileRepo) GetEducationFileById(fileId int) ([]byte, error) {
 		return nil, newm_helper.Trace(err)
 	}
 
-	return r.disk.GetFile(fmt.Sprintf("%s/%s.%s", file.Directory, file.Name, file.Type))
+	if file.Name == "" {
+		return nil, nil
+	}
+
+	return r.disk.GetFile(fmt.Sprintf("%s/%s", file.Directory, file.Name))
 }
 
 func (r *managerFileRepo) GetReportFileById(fileId int) ([]byte, error) {
@@ -80,7 +84,11 @@ func (r *managerFileRepo) GetReportFileById(fileId int) ([]byte, error) {
 		return nil, newm_helper.Trace(err)
 	}
 
-	return r.disk.GetFile(fmt.Sprintf("%s/%s.%s", file.Directory, file.Name, file.Type))
+	if file.Name == "" {
+		return nil, nil
+	}
+
+	return r.disk.GetFile(fmt.Sprintf("%s/%s", file.Directory, file.Name))
 }
 
 func (r *managerFileRepo) GetReportFilesInfoByUserId(userId int) ([]entity.GetFile, error) {
@@ -91,20 +99,20 @@ func (r *managerFileRepo) GetEducationFilesInfoByUserId(userId int) ([]entity.Ge
 	return r.psql.GetEducationFilesByUserId(userId)
 }
 
-func (r *managerFileRepo) CreateReportFile(fileBytes []byte, fileType string) error {
+func (r *managerFileRepo) CreateReportFile(fileBytes []byte, fileType string, userId int) error {
 	dir, err := r.disk.CreateFile(fileBytes, fileType)
 	if err != nil {
 		return newm_helper.Trace(err)
 	}
 
-	return r.psql.CreateReportFile(entity.NewCreateFile(dir))
+	return r.psql.CreateReportFile(entity.NewCreateFile(dir, userId))
 }
 
-func (r *managerFileRepo) CreateEducationFile(fileBytes []byte, fileType string) error {
+func (r *managerFileRepo) CreateEducationFile(fileBytes []byte, fileType string, userId int) error {
 	dir, err := r.disk.CreateFile(fileBytes, fileType)
 	if err != nil {
 		return newm_helper.Trace(err)
 	}
 
-	return r.psql.CreateEducationFile(entity.NewCreateFile(dir))
+	return r.psql.CreateEducationFile(entity.NewCreateFile(dir, userId))
 }
