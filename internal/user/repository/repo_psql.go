@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"searcher/internal/user/model/entity"
 
 	"github.com/Newmio/newm_helper"
@@ -14,13 +15,13 @@ type psqlUserRepo struct {
 
 func NewPsqlUserRepo(db *sqlx.DB) IPsqlUserRepo {
 	r := &psqlUserRepo{db: db}
-	if err := r.initTables(); err != nil{
+	if err := r.initTables(); err != nil {
 		panic(err)
 	}
 	return r
 }
 
-func (r *psqlUserRepo) UpdateUserRole(role string, userId int)error{
+func (r *psqlUserRepo) UpdateUserRole(role string, userId int) error {
 	str := `update users set role = $1 where id = $2`
 
 	_, err := r.db.Exec(str, role, userId)
@@ -69,7 +70,21 @@ func (r *psqlUserRepo) GetUser(login, password string) (entity.GetUser, error) {
 }
 
 func (db *psqlUserRepo) CreateUser(user entity.CreateUser) error {
-	str := `insert into users(login, password, email, role, date_create) values($1, $2, $3, $4, $5)`
+	var id int
+
+	str := "select id from users where login = $1"
+
+	if err := db.db.QueryRow(str, user.Login).Scan(&id); err != nil {
+		if err != sql.ErrNoRows {
+			return newm_helper.Trace(err, str)
+		}
+	}
+
+	if id != 0 {
+		return fmt.Errorf(fmt.Sprintf("user with login %s already exists", user.Login))
+	}
+
+	str = `insert into users(login, password, email, role, date_create) values($1, $2, $3, $4, $5)`
 
 	_, err := db.db.Exec(str, user.Login, user.Password, user.Email, user.Role, user.DateCreate)
 	if err != nil {

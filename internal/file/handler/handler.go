@@ -3,6 +3,8 @@ package handler
 import (
 	"fmt"
 	"io"
+	"net/http"
+	"os"
 	"searcher/internal/file/model/dto"
 	"searcher/internal/file/service"
 	"strconv"
@@ -52,6 +54,31 @@ func (h *Handler) InitFileRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 			}
 		}
 	}
+
+	e.GET("/test", h.Test)
+	e.GET("/test2", h.Test2)
+}
+
+func (h *Handler) Test2(c echo.Context) error {
+	file, err := os.Open("images/image1.png")
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	b, err := io.ReadAll(file)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.Blob(200, http.DetectContentType(b), b)
+}
+
+func (h *Handler) Test(c echo.Context) error {
+	if err := h.s.TestPdf(); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, nil)
 }
 
 func (h *Handler) DeleteEducationFile(c echo.Context) error {

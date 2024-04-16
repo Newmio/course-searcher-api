@@ -90,6 +90,10 @@ func (app *App) initService() {
 		CustomTimeFormat: "2006/01/02 15:04:05",
 		Output:           color.Output,
 	}))
+	app.Echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+        AllowOrigins: []string{"*"},
+        AllowMethods: []string{"*"},
+    }))
 
 	middlewareService := serviceMiddleware.NewMiddlewareService()
 	middlewareHandler := handlerMiddleware.NewHandler(middlewareService)
@@ -116,22 +120,38 @@ func (app *App) initService() {
 		return c.File("static/index.html")
 	})
 
-	color.New(color.BgMagenta, color.Bold).Println()
-	for _, value := range app.Echo.Routes() {
+	printRoutes(app.Echo)
+}
+
+func printRoutes(e *echo.Echo) {
+	color.New(color.BgHiBlack, color.Bold).Println("                                                    ")
+
+	for _, value := range e.Routes() {
 		var customColor color.Attribute
 
 		switch value.Method {
 		case "GET":
-			customColor = color.BgHiGreen
+			customColor = color.FgGreen
 
 		case "POST":
-			customColor = color.BgHiCyan
+			customColor = color.FgHiYellow
 
 		case "PUT":
-			customColor = color.BgHiMagenta
+			customColor = color.FgBlue
+
+		case "PATCH":
+			customColor = color.FgMagenta
+
+		case "DELETE":
+			customColor = color.FgHiRed
+
+		default:
+			continue
 		}
 
 		color.New(customColor, color.Bold).Print(fmt.Sprintf("\n\t%s : %s", value.Path, value.Method))
 	}
-	color.New(color.BgMagenta, color.Bold).Println()
+
+	fmt.Println()
+	color.New(color.BgHiBlack, color.Bold).Println("                                                    ")
 }

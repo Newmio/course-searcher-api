@@ -1,21 +1,53 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Course Searcher</title>
-        <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
-    </head>
+<html lang="ru">
 
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация и Регистрация</title>
+    <link rel="stylesheet" href="styles.css">
 
-        <input 
-        name="search_value" 
-        type="text" 
-        placeholder="golang..." 
-        hx-get="/api/course/get/long" 
-        hx-target="#search_results"
-        hx-headers='{"Accept": "text/html", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTE3OTMxODgsImlhdCI6MTcxMTc4NTk4OCwiaWRfdXNlciI6MSwicm9sZSI6InVzZXIifQ.w8og8D9G8lMk-ZJZ5i4Vi5EfVNz0tRtwVai-MtRaa2g"}'
-        ></input>
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous">
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js"></script>
+</head>
 
-        <div id="search_results"></div>
-    </body>
+<body>
+
+    <div class="container">
+        <input type="checkbox" id="registerToggle" class="register-toggle">
+
+        <div class="login-form" id="loginForm">
+            <h2>Вход</h2>
+            <form hx-post="http://localhost:8088/login" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+                <input name="login" type="text" placeholder="login" required>
+                <input name="password" type="password" placeholder="password" required>
+
+                <button type="submit">Войти</button>
+
+                <div class="register-link">
+                    <label for="registerToggle">Нету аккаунта?</label>
+                </div>
+            </form>
+        </div>
+
+        <div class="register-form">
+            <h2>Регистрация</h2>
+            <form hx-post="http://localhost:8088/register" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+                <input name="login" type="text" placeholder="login" required>
+                <input name="email" type="email" placeholder="email" required>
+                <input name="password" type="password" placeholder="password" required>
+
+                <button type="submit">Зарегистрироваться</button>
+
+                <div class="login-link">
+                    <label for="registerToggle">Уже есть аккаунт?</label>
+                </div>
+            </form>
+        </div>
+
+
+</body>
+
 </html>
