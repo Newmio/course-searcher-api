@@ -23,6 +23,7 @@ const (
 		"nvxertwyfuviywerbmfxgerwuygbuywerbgfuyeruyfyrsuegbuvydfbaguyraeuygfuyaergfuyoaegrhufyhgaeruygfyuaerghfuyhaeruygfyuaegfyuegrayuf" +
 		"fanbeuyrbfueyroabgsrbxekrighxmhuysehrmxyherysughyesurbguyershgiyhearigyuheuoryghfuyerahgfyuiahsdfiygheryaghfuioydshgfyrhyrhgyrh"
 	TOKENTIME = 7200
+	REFRESHTIME = 7200 * 14
 )
 
 type tokenClaims struct {
@@ -70,7 +71,7 @@ func (s *userService) Login(userReq dto.LoginUserRequest) (dto.LoginUserResponse
 		return dto.LoginUserResponse{}, err
 	}
 
-	return dto.NewLoginUserResponse(access, refresh, TOKENTIME), nil
+	return dto.NewLoginUserResponse(access, refresh, TOKENTIME, REFRESHTIME), nil
 }
 
 func (s *userService) CreateUser(user dto.RegisterUserRequest) error {
@@ -91,7 +92,7 @@ func (s *userService) GenerateToken(id int, role string) (string, string, error)
 
 	refreshClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(TOKENTIME * time.Second).Unix(),
+			ExpiresAt: time.Now().Add(REFRESHTIME * time.Second).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 		id,

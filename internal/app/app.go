@@ -117,7 +117,7 @@ func (app *App) initService() {
 	FileHandler.InitFileRoutes(app.Echo, middlewares)
 
 	app.Echo.GET("/", func(c echo.Context) error {
-		return c.File("static/index.html")
+		return c.File("template/index.html")
 	})
 
 	printRoutes(app.Echo)

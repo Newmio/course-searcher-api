@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"net/http"
 	"searcher/internal/user/model/dto"
 	"searcher/internal/user/service"
+	"strconv"
 
 	"github.com/Newmio/newm_helper"
 	"github.com/labstack/echo/v4"
@@ -77,6 +79,11 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 func (h *Handler) Login(c echo.Context) error {
 	var user dto.LoginUserRequest
 
+	cookie, err := strconv.ParseBool(c.QueryParam("cookie"))
+	if err != nil {
+		cookie = false
+	}
+
 	if err := c.Bind(&user); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
@@ -88,6 +95,25 @@ func (h *Handler) Login(c echo.Context) error {
 	tokens, err := h.s.Login(user)
 	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if cookie {
+		c.SetCookie(&http.Cookie{
+			Name:  "access",
+			Value: "Bearer " + tokens.Access,
+			Path:  "/api",
+			MaxAge: tokens.Exp,
+			Secure: true,
+			HttpOnly: true,
+		})
+		c.SetCookie(&http.Cookie{
+			Name:  "refresh",
+			Value: "Bearer " + tokens.Refresh,
+			Path:  "/api",
+			MaxAge: tokens.ExpRefresh,
+			Secure: true,
+			HttpOnly: true,
+		})
 	}
 
 	return c.JSON(200, tokens)

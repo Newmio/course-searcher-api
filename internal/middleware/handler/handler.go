@@ -22,13 +22,20 @@ func NewHandler(s service.IMiddlewareService) *Handler {
 
 func (h *Handler) ParseToken(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		var token []string
 		header := c.Request().Header.Get("Authorization")
 
 		if header == "" {
-			return c.JSON(401, newm_helper.ErrorResponse("token is required"))
-		}
 
-		token := strings.Split(header, " ")
+			cookie, err := c.Cookie("access")
+			if err != nil {
+				return c.JSON(401, newm_helper.ErrorResponse("token is required"))
+			}
+
+			token = strings.Split(cookie.Value, " ")
+		}else{
+			token = strings.Split(header, " ")
+		}
 
 		if len(token) != 2 {
 			return c.JSON(401, newm_helper.ErrorResponse("invalid token"))
