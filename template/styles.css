@@ -12,16 +12,34 @@ body {
     height: 100vh;
   }
   
+  /* Общие стили для формы */
+.login-form,
+.register-form {
+  padding: 20px;
+  background-color: #222;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 767px) {
   .login-form,
   .register-form {
-    width: 90%; /* Используем проценты для адаптивной ширины */
-    max-width: 350px; /* Установка максимальной ширины для больших экранов */
-    min-width: 50px; /* Установка минимальной ширины для маленьких экранов */
-    padding: 20px;
-    background-color: #222; /* Цвет фона форм в темных тонах */
-    border-radius: 15px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 90%; /* Ширина формы на мобильных устройствах (меньше 767px) */
+    max-width: 300px; /* Максимальная ширина для больших экранов */
+    min-width: 150px; /* Минимальная ширина для маленьких экранов */
   }
+}
+
+/* Стили для больших экранов */
+@media (min-width: 768px) {
+  .login-form,
+  .register-form {
+    width: 50%; /* Ширина формы на больших экранах (768px и больше) */
+    max-width: 400px; /* Максимальная ширина для больших экранов */
+    min-width: 250px; /* Минимальная ширина для маленьких экранов */
+  }
+}
   
   .login-form h2,
   .register-form h2 {
