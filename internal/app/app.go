@@ -120,8 +120,8 @@ func (app *App) initService() {
 		return c.File("template/index.html")
 	})
 
-	app.Echo.GET("/style.css", func(c echo.Context) error {
-		return c.File("template/style.css")
+	app.Echo.GET("/styles.css", func(c echo.Context) error {
+		return c.File("template/styles.css")
 	})
 
 	printRoutes(app.Echo)
