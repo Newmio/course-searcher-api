@@ -1,0 +1,109 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #333;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Выравнивание по верхнему краю */
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start; /* Выравнивание по верхнему краю */
+    max-width: 1200px;
+    width: 90%;
+    margin: 20px;
+    height: 100vh; /* Занимает всю высоту экрана */
+}
+
+.profile-form {
+    padding: 20px;
+    background-color: #222;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+    max-width: 300px;
+    width: 100%;
+}
+
+.profile-info {
+    margin-top: 20px;
+}
+
+.edit-profile-btn {
+    display: block;
+    margin: 0 auto; /* Это выравнивает кнопку по горизонтали */
+    text-align: center; /* Это выравнивает текст кнопки по центру кнопки */
+}
+
+.profile-info label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.profile-info div {
+    padding: 5px;
+    background-color: #444;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.avatar-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.avatar-container img {
+    max-width: 100%;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #222;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: auto;
+    max-width: 400px;
+    width: 100%;
+}
+
+.tabs {
+    display: flex;
+    flex-direction: row; /* Изменено на строку для расположения кнопок слева направо */
+    justify-content: center; /* Для центрирования кнопок */
+    margin-bottom: auto; /* Добавлено расстояние между кнопками */
+}
+
+.tabs button {
+    padding: 10px;
+    margin-right: 5px; /* Расстояние между кнопками */
+    border: none;
+    background-color: #444;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.tabs button:hover {
+    background-color: #0056b3;
+}
+
+.tab-content {
+    display: none;
+    padding: 10px;
+}
+
+.tab-content.active {
+    display: block;
+}

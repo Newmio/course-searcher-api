@@ -84,6 +84,8 @@ func (app *App) Run() {
 }
 
 func (app *App) initService() {
+	app.Echo.Static("/template", "template")
+
 	app.Echo.Use(middleware.Recover())
 	app.Echo.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format:           " [ ${time_custom} ]  ${latency_human}  ${status}   ${method}   ${uri}\n\n",
@@ -91,9 +93,15 @@ func (app *App) initService() {
 		Output:           color.Output,
 	}))
 	app.Echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-        AllowOrigins: []string{"*"},
-        AllowMethods: []string{"*"},
-    }))
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"*"},
+	}))
+	app.Echo.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Header().Set("Cache-Control", "no-cache, no-store")
+			return next(c)
+		}
+	})
 
 	middlewareService := serviceMiddleware.NewMiddlewareService()
 	middlewareHandler := handlerMiddleware.NewHandler(middlewareService)
@@ -117,11 +125,11 @@ func (app *App) initService() {
 	FileHandler.InitFileRoutes(app.Echo, middlewares)
 
 	app.Echo.GET("/", func(c echo.Context) error {
-		return c.File("template/index.html")
-	})
+		return c.File("template/user/profile/profile.html")
+	}, middlewares["api"])
 
-	app.Echo.GET("/styles.css", func(c echo.Context) error {
-		return c.File("template/styles.css")
+	app.Echo.GET("/login_form", func(c echo.Context) error {
+		return c.File("template/user/login/login.html")
 	})
 
 	printRoutes(app.Echo)

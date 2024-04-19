@@ -23,7 +23,7 @@ const (
 		"nvxertwyfuviywerbmfxgerwuygbuywerbgfuyeruyfyrsuegbuvydfbaguyraeuygfuyaergfuyoaegrhufyhgaeruygfyuaerghfuyhaeruygfyuaegfyuegrayuf" +
 		"fanbeuyrbfueyroabgsrbxekrighxmhuysehrmxyherysughyesurbguyershgiyhearigyuheuoryghfuyerahgfyuiahsdfiygheryaghfuioydshgfyrhyrhgyrh"
 	TOKENTIME = 7200
-	REFRESHTIME = 7200 * 14
+	REFRESHTIME = 86400 * 14
 )
 
 type tokenClaims struct {

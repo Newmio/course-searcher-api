@@ -101,20 +101,22 @@ func (h *Handler) Login(c echo.Context) error {
 		c.SetCookie(&http.Cookie{
 			Name:  "access",
 			Value: "Bearer " + tokens.Access,
-			Path:  "/api",
+			Path:  "/",
 			MaxAge: tokens.Exp,
-			Secure: true,
+			Secure: false,
 			HttpOnly: true,
 		})
 		c.SetCookie(&http.Cookie{
 			Name:  "refresh",
 			Value: "Bearer " + tokens.Refresh,
-			Path:  "/api",
+			Path:  "/",
 			MaxAge: tokens.ExpRefresh,
-			Secure: true,
+			Secure: false,
 			HttpOnly: true,
 		})
 	}
+
+	c.Response().Header().Set("HX-Redirect", "http://localhost:8088/")
 
 	return c.JSON(200, tokens)
 }
@@ -133,6 +135,8 @@ func (h *Handler) Register(c echo.Context) error {
 	if err := h.s.CreateUser(user); err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
+
+	c.Response().Header().Set("HX-Redirect", "http://localhost:8088/login_form")
 
 	return c.JSON(201, nil)
 }
