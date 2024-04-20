@@ -21,6 +21,18 @@ func NewPsqlUserRepo(db *sqlx.DB) IPsqlUserRepo {
 	return r
 }
 
+func (r *psqlUserRepo) GetUserById(id int) (entity.GetUser, error) {
+	var user entity.GetUser
+
+	str := "select * from users where id = $1"
+
+	if err := r.db.Get(&user, str, id); err != nil {
+		return entity.GetUser{}, newm_helper.Trace(err, str)
+	}
+
+	return user, nil
+}
+
 func (r *psqlUserRepo) UpdateUserRole(role string, userId int) error {
 	str := `update users set role = $1 where id = $2`
 
@@ -84,9 +96,9 @@ func (db *psqlUserRepo) CreateUser(user entity.CreateUser) error {
 		return fmt.Errorf(fmt.Sprintf("user with login %s already exists", user.Login))
 	}
 
-	str = `insert into users(login, password, email, role, date_create) values($1, $2, $3, $4, $5)`
+	str = `insert into users(login, password, email, role, avatar, date_create) values($1, $2, $3, $4, $5, $6)`
 
-	_, err := db.db.Exec(str, user.Login, user.Password, user.Email, user.Role, user.DateCreate)
+	_, err := db.db.Exec(str, user.Login, user.Password, user.Email, user.Role, user.Avatar, user.DateCreate)
 	if err != nil {
 		return newm_helper.Trace(err, str)
 	}

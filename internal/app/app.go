@@ -18,6 +18,8 @@ import (
 	handlerUser "searcher/internal/user/handler"
 	repoUser "searcher/internal/user/repository"
 	serviceUser "searcher/internal/user/service"
+	handlerView"searcher/internal/view/handler"
+	serviceView "searcher/internal/view/service"
 	"syscall"
 	"time"
 
@@ -124,13 +126,9 @@ func (app *App) initService() {
 	FileHandler := handlerFile.NewHandler(FileService)
 	FileHandler.InitFileRoutes(app.Echo, middlewares)
 
-	app.Echo.GET("/", func(c echo.Context) error {
-		return c.File("template/user/profile/profile.html")
-	}, middlewares["api"])
-
-	app.Echo.GET("/login_form", func(c echo.Context) error {
-		return c.File("template/user/login/login.html")
-	})
+	viewService := serviceView.NewViewService(managerUserRepo)
+	viewHandler := handlerView.NewHandler(viewService)
+	viewHandler.InitViewRoutes(app.Echo, middlewares)
 
 	printRoutes(app.Echo)
 }

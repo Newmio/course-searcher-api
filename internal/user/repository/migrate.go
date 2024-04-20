@@ -10,6 +10,7 @@ func (db *psqlUserRepo) initTables() error {
 		email text unique not null,
 		phone text default '',
 		role text not null,
+		avatar text default '',
 		date_create timestamp default now()
 	)`
 

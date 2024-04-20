@@ -63,7 +63,6 @@ func (h *Handler) GetShortCourses(c echo.Context) error {
 	} else if accept == "text/html" {
 		strHtml, err := newm_helper.RenderHtml("static/course/course_template.html", courses)
 		if err != nil {
-			fmt.Println(err)
 			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 		}
 		return c.HTML(200, strHtml)

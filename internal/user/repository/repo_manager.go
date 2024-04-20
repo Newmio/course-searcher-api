@@ -11,6 +11,7 @@ type IUserRepo interface {
 	GetUser(login, password string) (entity.GetUser, error)
 	UpdateUser(user entity.UpdateUser) error
 	UpdatePassword(user entity.UpdateUserPassword) error
+	GetUserById(id int) (entity.GetUser, error)
 }
 
 type IPsqlUserRepo interface {
@@ -18,6 +19,7 @@ type IPsqlUserRepo interface {
 	GetUser(login, password string) (entity.GetUser, error)
 	UpdateUser(user entity.UpdateUser) error
 	UpdatePassword(user entity.UpdateUserPassword) error
+	GetUserById(id int) (entity.GetUser, error)
 }
 
 type managerUserRepo struct {
@@ -27,6 +29,10 @@ type managerUserRepo struct {
 func NewManagerUserRepo(psql *sqlx.DB) IUserRepo {
 	psqlRepo := NewPsqlUserRepo(psql)
 	return &managerUserRepo{psql: psqlRepo}
+}
+
+func (r *managerUserRepo) GetUserById(id int) (entity.GetUser, error) {
+	return r.psql.GetUserById(id)
 }
 
 func (r *managerUserRepo) UpdatePassword(user entity.UpdateUserPassword) error {
