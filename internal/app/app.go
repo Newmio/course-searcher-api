@@ -18,7 +18,8 @@ import (
 	handlerUser "searcher/internal/user/handler"
 	repoUser "searcher/internal/user/repository"
 	serviceUser "searcher/internal/user/service"
-	handlerView"searcher/internal/view/handler"
+	handlerView "searcher/internal/view/handler"
+	repoView "searcher/internal/view/repository"
 	serviceView "searcher/internal/view/service"
 	"syscall"
 	"time"
@@ -126,7 +127,8 @@ func (app *App) initService() {
 	FileHandler := handlerFile.NewHandler(FileService)
 	FileHandler.InitFileRoutes(app.Echo, middlewares)
 
-	viewService := serviceView.NewViewService(managerUserRepo)
+	viewRepo := repoView.NewDiskViewRepo()
+	viewService := serviceView.NewViewService(viewRepo, managerUserRepo)
 	viewHandler := handlerView.NewHandler(viewService)
 	viewHandler.InitViewRoutes(app.Echo, middlewares)
 

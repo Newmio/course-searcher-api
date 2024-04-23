@@ -1,0 +1,25 @@
+<body>
+    <div>
+        <div class="profile-form">
+
+            <div class="avatar-container">
+                <img src="{{.Avatar}}" alt="Avatar">
+
+                <div class="avatar-upload">
+                    <button>Выбрать дефольную аватарку</button>
+
+                    <form  hx-get="/test">
+                        <input type="file" id="avatarFile"></input>
+                    <label for="avatarFile">Загрузить</label>
+                    </form>
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <input type="text" placeholder="{{.Login}}" value="{{.Login}}"></input>
+                <input type="email" placeholder="{{.Email}}" value="{{.Email}}"></input>
+                <input type="text" placeholder="{{.Phone}}" value="{{.Phone}}"></input>
+            </div>
+
+        </div>
+</body>

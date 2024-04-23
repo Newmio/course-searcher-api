@@ -9,24 +9,13 @@ body {
     min-height: 100vh;
 }
 
-.container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start; /* Выравнивание по верхнему краю */
-    max-width: 1200px;
-    width: 90%;
-    margin: 20px;
-    height: 100vh; /* Занимает всю высоту экрана */
-}
-
 .profile-form {
     padding: 20px;
     background-color: #222;
     border-radius: 15px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin: 20px;
-    max-width: 300px;
+    max-width: 350px;
     width: 100%;
 }
 
@@ -34,22 +23,33 @@ body {
     margin-top: 20px;
 }
 
+.profile-info input {
+    width: 100%;
+    font-size: 12px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: #c8c8c8;
+}
+
+#username{
+    pointer-events: none;
+}
+
+#email{
+    pointer-events: none;
+}
+
+#phone{
+    pointer-events: none;
+}
+
 .edit-profile-btn {
     display: block;
     margin: 0 auto; /* Это выравнивает кнопку по горизонтали */
     text-align: center; /* Это выравнивает текст кнопки по центру кнопки */
-}
-
-.profile-info label {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.profile-info div {
-    padding: 5px;
-    background-color: #444;
-    border-radius: 3px;
-    margin-bottom: 10px;
 }
 
 .avatar-container {
@@ -99,11 +99,19 @@ body {
     background-color: #0056b3;
 }
 
-.tab-content {
-    display: none;
-    padding: 10px;
+.avatar-upload{
+   margin: auto;
+   width: 50%;
 }
 
-.tab-content.active {
-    display: block;
+.avatar-upload button{
+    padding: 5px;
+    margin-bottom: 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.avatar-upload input{
+    display: none;
 }

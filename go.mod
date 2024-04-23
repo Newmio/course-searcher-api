@@ -3,7 +3,7 @@ module searcher
 go 1.22
 
 require (
-	github.com/Newmio/newm_helper v1.1.5
+	github.com/Newmio/newm_helper v1.2.6
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.9.2
 	github.com/fatih/color v1.16.0

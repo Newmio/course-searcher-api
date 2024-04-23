@@ -6,34 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль аккаунта</title>
     <link rel="stylesheet" href="template/user/profile/profile.css">
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous">
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js"></script>
 </head>
 
-<body>
-    <div>
+<body id="body">
+    <div id="main">
         <div class="profile-form">
+
             <div class="avatar-container">
-                <!-- Вставьте здесь ссылку на изображение вашей аватарки -->
                 <img src="{{.Avatar}}" alt="Avatar">
             </div>
+
             <div class="profile-info">
-                <label for="username">Логин:</label>
-                <div id="username">{{.Login}}</div>
-
-                <label for="email">Почта:</label>
-                <div id="email">{{.Email}}</div>
-
-                <label for="phone">Номер:</label>
-                <div id="phone">{{.Phone}}</div>
+                <input type="text" id="username" placeholder="{{.Login}}" value="{{.Login}}"></input>
+                <input type="email" id="email" placeholder="{{.Email}}" value="{{.Email}}"></input>
+                <input type="text" id="phone" placeholder="{{.Phone}}" value="{{.Phone}}"></input>
             </div>
-            <button id="edit-profile-btn" class="edit-profile-btn">Редактировать профиль</button>
+
+            <button hx-get="/update_profile" hx-target="#body" class="edit-profile-btn">Редактировать профиль</button>
         </div>
 
         <div class="sidebar">
-            <div class="tabs">
-                <button>История поиска</button>
+            <form class="tabs">
+                <button>Прошлый поиск</button>
                 <button>Активные курсы</button>
                 <button>Сертификаты</button>
-            </div>
-        </div>
+            </form>
+    </div>
 </body>
 </html>

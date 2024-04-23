@@ -1,0 +1,100 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #333;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.search-form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: -350px;
+}
+
+.web-search,
+.db-search,
+.history-search {
+    flex: 1; /* Растягиваем каждый блок на равную ширину */
+    padding: 20px;
+    margin: 20px;
+    background-color: #222;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.search-input {
+    display: flex;
+    justify-content: center; /* Центрирование по горизонтали */
+    position: fixed;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%); /* Центрирование по горизонтали */
+    width: 80%; /* Ширина блока по центру */
+    max-width: 400px; /* Максимальная ширина блока */
+    z-index: 1000;
+}
+
+.search-input input {
+    height: 100%;
+    width: 100%; /* Ширина инпута */
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 15px;
+}
+
+
+
+/* Стили для мобильных устройств */
+@media (max-width: 767px) {
+    .web-search,
+    .db-search,
+    .history-search {
+    width: 90%; /* Ширина формы на мобильных устройствах (меньше 767px) */
+    max-width: 300px; /* Максимальная ширина для больших экранов */
+    min-width: 150px; /* Минимальная ширина для маленьких экранов */
+  }
+}
+
+/* Стили для больших экранов */
+@media (min-width: 768px) {
+    .web-search,
+    .db-search,
+    .history-search {
+    width: 50%; /* Ширина формы на больших экранах (768px и больше) */
+    max-width: 400px; /* Максимальная ширина для больших экранов */
+    min-width: 250px; /* Минимальная ширина для маленьких экранов */
+  }
+}
+
+.db-search-icon,
+.web-search-icon,
+.history-search-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.db-search-icon img,
+.web-search-icon img,
+.history-search-icon img {
+    display: flex;
+    max-width: 100%;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+}
+
+.web-search-btn,
+.db-search-btn,
+.history-search-btn {
+    display: block;
+    margin: 0 auto; /* Это выравнивает кнопку по горизонтали */
+    text-align: center; /* Это выравнивает текст кнопки по центру кнопки */
+}

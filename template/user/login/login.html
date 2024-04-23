@@ -19,7 +19,7 @@
 
         <div class="login-form" id="loginForm">
             <h2>Вход</h2>
-            <form hx-post="http://localhost:8088/login?cookie=true" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+            <form hx-post="/login?cookie=true" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
                 <input name="login" type="text" placeholder="login" required>
                 <input name="password" type="password" placeholder="password" required>
 
@@ -33,7 +33,7 @@
 
         <div class="register-form">
             <h2>Регистрация</h2>
-            <form hx-post="http://localhost:8088/register" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+            <form hx-post="/register" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
                 <input name="login" type="text" placeholder="login" required>
                 <input name="email" type="email" placeholder="email" required>
                 <input name="password" type="password" placeholder="password" required>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль аккаунта</title>
+    <link rel="stylesheet" href="template/user/profile/update/update.css">
+</head>
+
+<body>
+    {{$x := 0}}
+    <div class="avatar-container">
+        {{range $index, $value := .Names}}
+        <img src="template/user/profile/avatars/{{$value}}" alt="Avatar">
+        {{$x = (add $x 1)}}
+        {{if eq $x 3}}
+            {{$x = 0}}
+    </div>
+    <div class="avatar-container">
+        {{end}}
+        {{end}}
+</body>
+
+</html>

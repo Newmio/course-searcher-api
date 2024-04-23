@@ -2,31 +2,49 @@ package service
 
 import (
 	repoUser "searcher/internal/user/repository"
+	"searcher/internal/view/repository"
 
 	"github.com/Newmio/newm_helper"
 )
 
 type IViewService interface {
-	GetUserProfile(id int)(string, error)
+	GetUserProfile(id int, directory string)(string, error)
+	GetAllDefaultAvatarNames() (string, error)
 }
 
 type viewService struct {
+	r repository.IDiskViewRepo
 	rUser repoUser.IUserRepo
 }
 
-func NewViewService(rUser repoUser.IUserRepo) IViewService {
-	return &viewService{rUser: rUser}
+func NewViewService(r repository.IDiskViewRepo, rUser repoUser.IUserRepo) IViewService {
+	return &viewService{r: r, rUser: rUser}
 }
 
-func (s *viewService) GetUserProfile(id int)(string, error){
+func (s *viewService) GetUserProfile(id int, directory string)(string, error){
 	user, err := s.rUser.GetUserById(id)
 	if err != nil {
-		return "", err
+		return "", newm_helper.Trace(err)
 	}
 
 	if user.Phone == "" {
 		user.Phone = "Номер не указан"
 	}
 	
-	return newm_helper.RenderHtml("template/user/profile/profile.html", user)
+	return newm_helper.RenderHtml(directory, user)
+}
+
+func (s *viewService) GetAllDefaultAvatarNames() (string, error) {
+	var data struct{
+		Names []string
+	}
+
+	names, err := s.r.GetAllDefaultAvatarNames()
+	if err != nil{
+		return "", newm_helper.Trace(err)
+	}
+
+	data.Names = names
+
+	return newm_helper.RenderHtml("template/user/profile/update/update.html", data)
 }
