@@ -98,3 +98,160 @@ body {
     margin: 0 auto; /* Это выравнивает кнопку по горизонтали */
     text-align: center; /* Это выравнивает текст кнопки по центру кнопки */
 }
+
+/* .course {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-radius: 15px;
+    background-color: #821dca;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.course-img {
+    margin-right: 5px;
+}
+
+.course-img img {
+    border-radius: 15px;
+    width: 360px;
+    height: 220px;
+    margin: 5px;
+}
+
+.course-info {
+    flex-grow: 1;
+}
+
+.course-info h4 {
+    margin-top: 0;
+}
+
+.course-description {
+    text-align: center;
+}
+
+.course-info > div {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.course-platform {
+    width: 50%;
+}
+
+.lang,
+.author,
+.duration {
+    flex-grow: 1;
+}
+
+.money {
+    margin-top: 10px;
+}
+
+.course-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.rating {
+    flex-grow: 1;
+}
+
+.course-link button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+} */
+
+.course {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-radius: 15px;
+    background-color: #821dca;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.course-img {
+    margin-right: 5px;
+}
+
+.course-img img {
+    border-radius: 15px;
+    width: 360px;
+    height: 220px;
+    margin: 5px;
+}
+
+.course-info {
+    flex-grow: 1;
+}
+
+.course-info h4 {
+    margin-top: 0;
+}
+
+.course-description {
+    text-align: center;
+}
+
+.course-info > div {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.course-platform {
+    width: 50%;
+}
+
+.lang,
+.author,
+.duration {
+    flex-grow: 1;
+}
+
+.money {
+    margin-top: 10px;
+}
+
+.course-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.rating {
+    flex-grow: 1;
+}
+
+.course-link button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+

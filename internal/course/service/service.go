@@ -36,6 +36,7 @@ var WebCourseParams = map[string]WebCourseParam{
 			"rating":      "div.course-rating-on<>data-text",
 			"money":       "div.course-status",
 			"link":        "div.course-details-bottom a<>href",
+			"icon-link":   "picture img <>src",
 		},
 	},
 }
@@ -206,5 +207,8 @@ func (s *courseService) fillCourse(course *dto.CourseList, values []string, atri
 
 	case "link":
 		course.Link = strings.Join(values, ", ")
+
+	case "icon-link":
+		course.IconLink = strings.Join(values, ", ")
 	}
 }

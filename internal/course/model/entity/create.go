@@ -15,6 +15,7 @@ type CreateCourse struct {
 	Platform    string
 	Money       string
 	Link        string
+	IconLink    string
 	Active      bool
 	DateCreate  string
 }
@@ -30,6 +31,7 @@ func NewCreateCourse(course dto.CreateCourseRequest) CreateCourse {
 		Platform:    course.Platform,
 		Money:       course.Money,
 		Link:        course.Link,
+		IconLink:    course.IconLink,
 		Active:      true,
 		DateCreate:  time.Now().Format("2006-01-02 15:04:05"),
 	}
@@ -49,6 +51,7 @@ func NewCreateCourses(courses []dto.CourseList) []CreateCourse {
 			Platform:    value.Platform,
 			Money:       value.Money,
 			Link:        value.Link,
+			IconLink:    value.IconLink,
 			Active:      true,
 			DateCreate:  time.Now().Format("2006-01-02 15:04:05"),
 		})

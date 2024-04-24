@@ -14,6 +14,7 @@ type CourseList struct {
 	Money       string
 	Link        string
 	Active      bool
+	IconLink    string `db:"icon_link"`
 	DateCreate  string `db:"date_create"`
 	DateUpdate  string `db:"date_update"`
 }
@@ -32,6 +33,7 @@ func newCourseList(coruses []CourseList) []dto.CourseList {
 			Platform:    value.Platform,
 			Money:       value.Money,
 			Link:        value.Link,
+			IconLink:    value.IconLink,
 		})
 	}
 

@@ -16,6 +16,7 @@ type UpdateCourse struct {
 	Platform    string
 	Money       string
 	Link        string
+	IconLink    string `db:"icon_link"`
 	DateUpdate  string `db:"date_update"`
 }
 
@@ -31,6 +32,7 @@ func NewUpdateCourse(course dto.PutUpdateCourseRequest) UpdateCourse {
 		Platform:    course.Platform,
 		Money:       course.Money,
 		Link:        course.Link,
+		IconLink:    course.IconLink,
 		DateUpdate:  time.Now().Format("2006-01-02 15:04:05"),
 	}
 }

@@ -121,6 +121,10 @@ func (r *redisCourseRepo) UpdateGlobalCourseByParam(course entity.UpdateCourse) 
 				courseFromRedis.Link = course.Link
 			}
 
+			if course.IconLink != "" {
+				courseFromRedis.IconLink = course.IconLink
+			}
+
 			if course.DateUpdate != "" {
 				courseFromRedis.DateUpdate = course.DateUpdate
 			}
@@ -165,6 +169,7 @@ func (r *redisCourseRepo) UpdateGlobalCourse(course entity.UpdateCourse) error {
 			courseFromRedis.Platform = course.Platform
 			courseFromRedis.Money = course.Money
 			courseFromRedis.Link = course.Link
+			courseFromRedis.IconLink = course.IconLink
 			courseFromRedis.DateUpdate = course.DateUpdate
 
 			jsonCourse, err := json.Marshal(courseFromRedis)

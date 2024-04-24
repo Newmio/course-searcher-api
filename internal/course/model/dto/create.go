@@ -12,6 +12,7 @@ type CreateCourseRequest struct {
 	Platform    string `json:"platform" xml:"platform"`
 	Money       string `json:"money" xml:"money"`
 	Link        string `json:"link" xml:"link"`
+	IconLink    string `json:"icon_link" xml:"icon_link"`
 }
 
 func (c CreateCourseRequest) Validate() error {

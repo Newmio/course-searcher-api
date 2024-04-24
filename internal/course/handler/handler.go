@@ -61,7 +61,7 @@ func (h *Handler) GetShortCourses(c echo.Context) error {
 		return c.XML(200, courses)
 
 	} else if accept == "text/html" {
-		strHtml, err := newm_helper.RenderHtml("static/course/course_template.html", courses)
+		strHtml, err := newm_helper.RenderHtml("template/course/course_template.html", courses)
 		if err != nil {
 			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 		}
@@ -143,7 +143,7 @@ func (h *Handler) GetLongCourses(c echo.Context) error {
 		return c.XML(200, courses)
 
 	} else if accept == "text/html" {
-		strHtml, err := newm_helper.RenderHtml("static/course/course_template.html", courses)
+		strHtml, err := newm_helper.RenderHtml("template/course/course_template.html", courses)
 		if err != nil {
 			fmt.Println(err)
 			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))

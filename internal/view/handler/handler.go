@@ -19,7 +19,7 @@ func (h *Handler) InitViewRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 
 	e.GET("/", func(c echo.Context) error {
 		return c.File("template/course/search/search.html")
-	})
+	}, middlewares["api"])
 	
 	e.GET("/login_form", func(c echo.Context) error {
 		return c.File("template/user/login/login.html")

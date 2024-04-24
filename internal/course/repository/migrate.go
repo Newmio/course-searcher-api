@@ -14,6 +14,7 @@ func (r *psqlCourseRepo) initTables() error {
 		platform text not null,
 		money text default '',
 		link text unique not null,
+		icon_link text default '',
 		active boolean default true,
 		date_create timestamp default now(),
 		date_update timestamp default now()

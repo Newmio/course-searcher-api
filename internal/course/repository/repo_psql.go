@@ -79,6 +79,12 @@ func (r *psqlCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error {
 		}
 	}
 
+	if course.Link != "" {
+		if !newm_helper.СontainsSQLInjection(course.Link) {
+			str += fmt.Sprintf(" icon_link = '%s',", course.Link)
+		}
+	}
+
 	if course.DateUpdate != "" {
 		if !newm_helper.СontainsSQLInjection(course.DateUpdate) {
 			str += fmt.Sprintf(" date_update = '%s',", course.DateUpdate)
@@ -101,10 +107,10 @@ func (r *psqlCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error {
 
 func (r *psqlCourseRepo) UpdateCourse(course entity.UpdateCourse) error {
 	str := `update courses set name = $1, description = $2, language = $3, author = $4, 
-	duration = $5, rating = $6, platform = $7, money = $8, link = $9, date_update = $10 where id = $11`
+	duration = $5, rating = $6, platform = $7, money = $8, link = $9, icon_link = $10, date_update = $11 where id = $12`
 
 	_, err := r.psql.Exec(str, course.Name, course.Description, course.Language, course.Author,
-		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.DateUpdate, course.Id)
+		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.IconLink, course.DateUpdate, course.Id)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
 			return newm_helper.Trace(fmt.Errorf("link already exists"))
@@ -132,11 +138,11 @@ func (r *psqlCourseRepo) CreateCourse(course entity.CreateCourse) error {
 		return fmt.Errorf("created")
 	}
 
-	str = `insert into courses(name, description, language, author, duration, rating, platform, money, link, active, date_create) 
-			values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
+	str = `insert into courses(name, description, language, author, duration, rating, platform, money, link, icon_link, active, date_create) 
+			values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
 	result, err := r.psql.Exec(str, course.Name, course.Description, course.Language, course.Author,
-		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.Active, course.DateCreate)
+		course.Duration, course.Rating, course.Platform, course.Money, course.Link, course.IconLink, course.Active, course.DateCreate)
 	if err != nil {
 		return newm_helper.Trace(err, str)
 	}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма поиска</title>
+    <link rel="stylesheet" href="template/course/course_template.css">
+
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous">
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js"></script>
+</head>
+
+<body>
+
+    {{range .Courses}}
+    <div class="course">
+
+        <div class="course-img">
+            <img src="{{.IconLink}}" alt="course_image">
+        </div>
+
+        <div class="course-info">
+            <h4>{{.Name}}</h4>
+            <div class="course-description">{{.Description}}</div>
+        </div>
+
+        <div class="course-platform">{{.Platform}}</div>
+
+        <div class="course-info">
+            <div class="lang">{{.Language}}</div>
+            <div class="author">{{.Author}}</div>
+            <div class="duration">{{.Duration}}</div>
+        </div>
+
+        <div class="money">{{.Money}}</div>
+
+        <div class="course-link">
+            <div class="rating">{{.Rating}}</div>
+            <button class="course-link">Перейти</button>
+        </div>
+
+    </div>
+    {{end}}
+
+</body>
+
+</html>

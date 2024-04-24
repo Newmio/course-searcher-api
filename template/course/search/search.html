@@ -6,50 +6,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Форма поиска</title>
     <link rel="stylesheet" href="template/course/search/search.css">
+
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous">
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js"></script>
 </head>
 
 <body>
 
     <div>
 
-    <div class="search-input">
-        <input type="text" placeholder="Goland Clean Architecture..."></input>
+        <form hx-headers='{"Content-Type": "application/json", "Accept": "text/html"}' hx-ext="json-enc" hx-target="#result">
+            <div class="search-input">
+                <input name="search_value" type="text" placeholder="Goland Clean Architecture..."></input>
+            </div>
+
+            <div class="search-form">
+
+                <div class="web-search">
+                    <div class="web-search-icon">
+                        <img src="template/course/search/web-search-icon.jpg" alt="web-search-icon">
+                    </div>
+
+                    <div class="web-search-btn">
+                        <button hx-post="/api/course/get/long" type="submit">Веб поиск</button>
+                    </div>
+                </div>
+
+                <div class="db-search">
+                    <div class="db-search-icon">
+                        <img src="template/course/search/db-search-icon.jpg" alt="db-search-icon">
+                    </div>
+
+                    <div class="db-search-btn">
+                        <button hx-post="/api/course/get/short" type="submit">Быстрый поиск</button>
+                    </div>
+                </div>
+
+                <div class="history-search">
+                    <div class="history-search-icon">
+                        <img src="template/course/search/history-search-icon.jpg" alt="history-search-icon">
+                    </div>
+
+                    <div class="history-search-btn">
+                        <button>История последних поисков</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
     </div>
 
-    <div class="search-form">
 
-        <div class="web-search">
-            <div class="web-search-icon">
-                <img src="template/course/search/web-search-icon.jpg" alt="web-search-icon">
-            </div>
-
-            <div class="web-search-btn">
-                <button>Веб поиск</button>
-            </div>
-        </div>
-
-        <div class="db-search">
-            <div class="db-search-icon">
-                <img src="template/course/search/db-search-icon.jpg" alt="db-search-icon">
-            </div>
-
-            <div class="db-search-btn">
-                <button>Быстрый поиск</button>
-            </div>
-        </div>
-
-        <div class="history-search">
-            <div class="history-search-icon">
-                <img src="template/course/search/history-search-icon.jpg" alt="history-search-icon">
-            </div>
-
-            <div class="history-search-btn">
-                <button>История последних поисков</button>
-            </div>
-        </div>
-
-    </div>
-</div>
+    <div id="result"></div>
 
 </body>
 
