@@ -23,28 +23,24 @@
         </div>
 
         <div class="course-info">
-            <h4>{{.Name}}</h4>
-            <div class="course-description">{{.Description}}</div>
+            <h3>{{.Name}}</h3>
+            <p class="course-description">{{.Description}}</p>  
         </div>
 
-        <div class="course-platform">{{.Platform}}</div>
-
-        <div class="course-info">
-            <div class="lang">{{.Language}}</div>
-            <div class="author">{{.Author}}</div>
-            <div class="duration">{{.Duration}}</div>
+        <div class="course-common">
+            <div class="course-platform">Платформа: {{.Platform}}</div>
+            <div class="author">Автор: {{.Author}}</div>
+            <div class="rating">Рейтинг: {{.Rating}}</div>
+            <div class="lang">Язык курса: {{.Language}}</div>
+            <div class="duration">Длительность: {{.Duration}}</div>
+            <div class="money">Цена: {{.Money}}</div>
+            
+            <div class="course-link">
+                <button onclick='window.location.href = "{{.Link}}";'>Перейти</button>
+            </div>
         </div>
-
-        <div class="money">{{.Money}}</div>
-
-        <div class="course-link">
-            <div class="rating">{{.Rating}}</div>
-            <button class="course-link">Перейти</button>
-        </div>
-
     </div>
     {{end}}
-
 </body>
 
 </html>

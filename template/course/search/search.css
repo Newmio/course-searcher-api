@@ -6,7 +6,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    min-height: 300px;
 }
 
 .search-form {
@@ -14,7 +14,6 @@ body {
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
-    margin-top: -350px;
 }
 
 .web-search,
@@ -30,15 +29,11 @@ body {
 }
 
 .search-input {
-    display: flex;
-    justify-content: center; /* Центрирование по горизонтали */
-    position: fixed;
-    top: 8%;
+    position: relative;
     left: 50%;
     transform: translateX(-50%); /* Центрирование по горизонтали */
     width: 80%; /* Ширина блока по центру */
     max-width: 400px; /* Максимальная ширина блока */
-    z-index: 1000;
 }
 
 .search-input input {
@@ -49,17 +44,15 @@ body {
     border-radius: 15px;
 }
 
-
-
 /* Стили для мобильных устройств */
 @media (max-width: 767px) {
     .web-search,
     .db-search,
     .history-search {
-    width: 90%; /* Ширина формы на мобильных устройствах (меньше 767px) */
-    max-width: 300px; /* Максимальная ширина для больших экранов */
-    min-width: 150px; /* Минимальная ширина для маленьких экранов */
-  }
+        width: 90%; /* Ширина формы на мобильных устройствах (меньше 767px) */
+        max-width: 300px; /* Максимальная ширина для больших экранов */
+        min-width: 150px; /* Минимальная ширина для маленьких экранов */
+    }
 }
 
 /* Стили для больших экранов */
@@ -67,10 +60,10 @@ body {
     .web-search,
     .db-search,
     .history-search {
-    width: 50%; /* Ширина формы на больших экранах (768px и больше) */
-    max-width: 400px; /* Максимальная ширина для больших экранов */
-    min-width: 250px; /* Минимальная ширина для маленьких экранов */
-  }
+        width: 30%; /* Ширина формы на больших экранах (768px и больше) */
+        max-width: 400px; /* Максимальная ширина для больших экранов */
+        min-width: 250px; /* Минимальная ширина для маленьких экранов */
+    }
 }
 
 .db-search-icon,
@@ -99,92 +92,29 @@ body {
     text-align: center; /* Это выравнивает текст кнопки по центру кнопки */
 }
 
-/* .course {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    border-radius: 15px;
-    background-color: #821dca;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+#result {
+    position: absolute;
+    left: 0;
+    transform: translateY(61%);
 }
-
-.course-img {
-    margin-right: 5px;
-}
-
-.course-img img {
-    border-radius: 15px;
-    width: 360px;
-    height: 220px;
-    margin: 5px;
-}
-
-.course-info {
-    flex-grow: 1;
-}
-
-.course-info h4 {
-    margin-top: 0;
-}
-
-.course-description {
-    text-align: center;
-}
-
-.course-info > div {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
-.course-platform {
-    width: 50%;
-}
-
-.lang,
-.author,
-.duration {
-    flex-grow: 1;
-}
-
-.money {
-    margin-top: 10px;
-}
-
-.course-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-}
-
-.rating {
-    flex-grow: 1;
-}
-
-.course-link button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px;
-} */
 
 .course {
+    margin-left: 2%;
+    margin-right: 2%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
     border-radius: 15px;
-    background-color: #821dca;
+    background-color: #222;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.course-common {
+    margin: 2%;
+    white-space: nowrap;
+    display: inline-block;
+    text-align: center;
 }
 
 .course-img {
@@ -193,20 +123,22 @@ body {
 
 .course-img img {
     border-radius: 15px;
-    width: 360px;
-    height: 220px;
+    width: 100%;
+    max-width: 360px;
+    height: auto;
     margin: 5px;
 }
 
 .course-info {
     flex-grow: 1;
+    text-align: center;
 }
 
 .course-info h4 {
-    margin-top: 0;
+    text-align: center;
 }
 
-.course-description {
+.course-info p {
     text-align: center;
 }
 
@@ -217,17 +149,21 @@ body {
 }
 
 .course-platform {
-    width: 50%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-bottom: 3px;
 }
 
 .lang,
 .author,
 .duration {
+    margin-bottom: 3px;
     flex-grow: 1;
 }
 
 .money {
-    margin-top: 10px;
+    margin-right: 1%;
 }
 
 .course-link {
@@ -235,10 +171,12 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-top: 10px;
+    margin-right: 1%;
 }
 
 .rating {
     flex-grow: 1;
+    margin-bottom: 3px;
 }
 
 .course-link button {
@@ -248,10 +186,10 @@ body {
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
+    margin: auto;
     cursor: pointer;
     border-radius: 5px;
+    display: block;
+    width: fit-content;
 }
-
