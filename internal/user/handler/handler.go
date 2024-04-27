@@ -116,7 +116,7 @@ func (h *Handler) Login(c echo.Context) error {
 		})
 	}
 
-	c.Response().Header().Set("HX-Redirect", "http://localhost:8088/")
+	c.Response().Header().Set("HX-Redirect", "/")
 
 	return c.JSON(200, tokens)
 }
@@ -136,7 +136,7 @@ func (h *Handler) Register(c echo.Context) error {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	c.Response().Header().Set("HX-Redirect", "http://localhost:8088/login_form")
+	c.Response().Header().Set("HX-Redirect", "/login_form")
 
 	return c.JSON(201, nil)
 }
