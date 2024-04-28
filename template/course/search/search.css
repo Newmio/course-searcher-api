@@ -137,10 +137,10 @@ body {
 }
 
 .course-img img {
+    width: 360px;
+    height: 220px;
     border-radius: 15px;
-    width: 100%;
     max-width: 360px;
-    height: auto;
     margin: 5px;
 }
 
