@@ -23,9 +23,10 @@
             <div class="profile-info">
                 <input type="text" id="username" placeholder="{{.Login}}" value="{{.Login}}"></input>
                 <input type="email" id="email" placeholder="{{.Email}}" value="{{.Email}}"></input>
-                <input type="text" id="phone" placeholder="{{.Phone}}" value="{{.Phone}}"></input>
+                <input type="text" id="phone" placeholder="Номер не указан" value="{{.Phone}}"></input>
             </div>
 
+            <h6 class="warning">Пожалуйста, нажмите кнопку "Редактировать профиль" и убедитесь, что информация заполнена правильно. Если вы не понимаете что нужно внести, то обратитесь к администратору, нажав на кнопку "поддержка". Это нужно для корректной генерации отчета</h6>
             <button hx-get="/update_profile" hx-target="#body" class="edit-profile-btn">Редактировать профиль</button>
         </div>
 

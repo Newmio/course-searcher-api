@@ -26,10 +26,6 @@ func (s *viewService) GetUserProfile(id int, directory string)(string, error){
 	if err != nil {
 		return "", newm_helper.Trace(err)
 	}
-
-	if user.Phone == "" {
-		user.Phone = "Номер не указан"
-	}
 	
 	return newm_helper.RenderHtml(directory, user)
 }

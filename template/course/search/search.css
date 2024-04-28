@@ -36,6 +36,13 @@ body {
     max-width: 400px; /* Максимальная ширина блока */
 }
 
+.profile-container{
+    position: fixed;
+    right: 1%;
+    top: 4%; /* Можете настроить вертикальное положение элемента */
+    transform: translateY(-50%);
+}
+
 .search-input input {
     height: 100%;
     width: 100%; /* Ширина инпута */
@@ -82,6 +89,14 @@ body {
     border-radius: 50%;
     width: 120px;
     height: 120px;
+}
+
+.profile-container img{
+    display: flex;
+    max-width: 100%;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
 }
 
 .web-search-btn,

@@ -46,6 +46,11 @@ body {
     pointer-events: none;
 }
 
+.warning{
+    text-align: center;
+    color: #ff0000;
+}
+
 .edit-profile-btn {
     display: block;
     margin: 0 auto; /* Это выравнивает кнопку по горизонтали */
