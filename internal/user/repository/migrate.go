@@ -19,16 +19,15 @@ func (db *psqlUserRepo) initTables() error {
 		return newm_helper.Trace(err)
 	}
 
-	str = `create table if not exists persons(
+	str = `create table if not exists user_info(
 		id serial primary key,
-		first_name text default '',
+		id_user int references users(id) on delete cascade,
+		name text default '',
 		middle_name text default '',
 		last_name text default '',
-		city text default '',
-		street text default '',
-		university_role text not null,
-		id_user int not null,
-		date_create timestamp default now()
+		group text default '',
+		proffession text default '',
+		proffession_number text default ''
 	)`
 
 	_, err = db.db.Exec(str)
