@@ -128,7 +128,7 @@ func (app *App) initService() {
 	FileHandler.InitFileRoutes(app.Echo, middlewares)
 
 	viewRepo := repoView.NewDiskViewRepo()
-	viewService := serviceView.NewViewService(viewRepo, managerUserRepo)
+	viewService := serviceView.NewViewService(viewRepo, managerUserRepo, managerCourseRepo)
 	viewHandler := handlerView.NewHandler(viewService)
 	viewHandler.InitViewRoutes(app.Echo, middlewares)
 

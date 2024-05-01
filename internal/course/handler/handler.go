@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"searcher/internal/course/model/dto"
 	"searcher/internal/course/service"
 
@@ -27,25 +26,71 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 			{
 				get.POST("/long", h.GetLongCourses)
 				get.POST("/short", h.GetShortCourses)
+				get.GET("/by_user", h.GetCoursesByUser)
+				get.GET("/history", h.GetCoursesHistory)
 			}
 
 			course.POST("/create", h.CreateCourse)
 			course.PUT("/update", h.UpdateCourse)
 			course.PATCH("/update_by_param", h.UpdateCourseByParam)
+			course.GET("/check", h.CheckCourse)
 		}
 	}
 }
 
+func (h *Handler) GetCoursesHistory(c echo.Context) error {
+	courses, err := h.s.GetCacheCoursesByUser(c.Get("userId").(int))
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return courseResponse(c, courses)
+}
+
+func (h *Handler) CheckCourse(c echo.Context) error {
+	accept := c.Request().Header.Get("Accept")
+
+	flag, err := h.s.CheckCourse(c.QueryParam("link"))
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	resp := map[string]bool{"check": flag}
+
+	switch accept {
+	case "application/xml":
+		return c.XML(200, resp)
+
+	case "text/html":
+		strHtml := `<h5 style="color: red;">Запрос на подтверждение курса<br>уже отправлен на проверку</h5>`
+
+		if flag {
+			strHtml = `<h5 style="color: green;">Курс уже доступен!<br>Найдите его у себя в профиле</h5>`
+		}
+
+		return c.HTML(200, strHtml)
+
+	default:
+		return c.JSON(200, resp)
+	}
+}
+
+func (h *Handler) GetCoursesByUser(c echo.Context) error {
+	id := c.Get("userId").(int)
+
+	courses, err := h.s.GetCoursesByUser(id)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, courses)
+}
+
 func (h *Handler) GetShortCourses(c echo.Context) error {
 	var course dto.GetCourseRequest
-	accept := c.Request().Header.Get("Accept")
 
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
-	}
-
-	if accept == "" {
-		c.JSON(400, newm_helper.ErrorResponse("Accept header is required"))
 	}
 
 	if err := course.Validate(); err != nil {
@@ -57,18 +102,7 @@ func (h *Handler) GetShortCourses(c echo.Context) error {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	if accept == "application/xml" {
-		return c.XML(200, courses)
-
-	} else if accept == "text/html" {
-		strHtml, err := newm_helper.RenderHtml("template/course/course_template.html", courses)
-		if err != nil {
-			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
-		}
-		return c.HTML(200, strHtml)
-	}
-
-	return c.JSON(200, courses)
+	return courseResponse(c, courses)
 }
 
 func (h *Handler) UpdateCourseByParam(c echo.Context) error {
@@ -120,36 +154,36 @@ func (h *Handler) CreateCourse(c echo.Context) error {
 
 func (h *Handler) GetLongCourses(c echo.Context) error {
 	var course dto.GetCourseRequest
-	accept := c.Request().Header.Get("Accept")
 
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
-	}
-
-	if accept == "" {
-		c.JSON(400, newm_helper.ErrorResponse("Accept header is required"))
 	}
 
 	if err := course.Validate(); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	courses, err := h.s.GetLongCourses(course)
+	courses, err := h.s.GetLongCourses(course, c.Get("userId").(int))
 	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	if accept == "application/xml" {
+	return courseResponse(c, courses)
+}
+
+func courseResponse(c echo.Context, courses dto.CourseListResponse) error {
+	switch c.Request().Header.Get("Accept") {
+	case "application/xml":
 		return c.XML(200, courses)
 
-	} else if accept == "text/html" {
+	case "text/html":
 		strHtml, err := newm_helper.RenderHtml("template/course/course_template.html", courses)
 		if err != nil {
-			fmt.Println(err)
 			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 		}
 		return c.HTML(200, strHtml)
-	}
 
-	return c.JSON(200, courses)
+	default:
+		return c.JSON(200, courses)
+	}
 }

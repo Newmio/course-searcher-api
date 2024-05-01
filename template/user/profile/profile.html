@@ -33,9 +33,12 @@
         <div class="sidebar">
             <form class="tabs">
                 <button>Прошлый поиск</button>
-                <button>Активные курсы</button>
-                <button>Сертификаты</button>
+                <button>Ваши курсы</button>
+                <button hx-get="/profile" hx-target="#result">Сертификаты</button>
             </form>
+        </div>
+
+        <div id="result"></div>
     </div>
 </body>
 </html>

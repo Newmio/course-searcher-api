@@ -16,10 +16,57 @@ type psqlCourseRepo struct {
 
 func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 	r := &psqlCourseRepo{psql: psql}
-	if err := r.initTables(); err != nil{
+	if err := r.initTables(); err != nil {
 		panic(err)
 	}
 	return r
+}
+
+func (r *psqlCourseRepo) GetCourseByLink(link string) (entity.CourseList, error) {
+	var course entity.CourseList
+
+	str := `select * from courses where link = $1`
+
+	if err := r.psql.Get(&course, str, link); err != nil {
+		if err != sql.ErrNoRows {
+			return course, newm_helper.Trace(err, str)
+		}
+		return entity.CourseList{}, nil
+	}
+
+	return course, nil
+}
+
+func (r *psqlCourseRepo) GetCoursesByUser(id int) ([]entity.CourseList, error) {
+	var courses []entity.CourseList
+
+	var id_courses []int
+
+	str := `select id_course from course_user where id_user = $1`
+
+	if err := r.psql.Select(&id_courses, str, id); err != nil {
+		return nil, newm_helper.Trace(err, str)
+	}
+
+	str = "select * from courses where id = $1"
+
+	stmt, err := r.psql.Preparex(str)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+	defer stmt.Close()
+
+	for _, v := range id_courses {
+		var course entity.CourseList
+
+		if err := stmt.Get(&course, v); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		courses = append(courses, course)
+	}
+
+	return courses, nil
 }
 
 func (r *psqlCourseRepo) UpdateCourseByParam(course entity.UpdateCourse) error {

@@ -42,11 +42,14 @@ var WebCourseParams = map[string]WebCourseParam{
 }
 
 type ICourseService interface {
-	GetLongCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
+	GetLongCourses(searchValue dto.GetCourseRequest, userId int) (dto.CourseListResponse, error)
 	CreateCourse(course dto.CreateCourseRequest) error
 	UpdateCourse(course dto.PutUpdateCourseRequest) error
 	UpdateCourseByParam(course dto.PutUpdateCourseRequest) error
 	GetShortCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
+	GetCoursesByUser(id int)(map[string]dto.CourseListResponse, error)
+	CheckCourse(link string)(bool, error)
+	GetCacheCoursesByUser(userId int) (dto.CourseListResponse, error)
 }
 
 type courseService struct {
@@ -55,6 +58,43 @@ type courseService struct {
 
 func NewCourseService(r repository.ICourseRepo) ICourseService {
 	return &courseService{r: r}
+}
+
+func (s *courseService) GetCacheCoursesByUser(userId int) (dto.CourseListResponse, error) {
+	cacheCourses, err := s.r.GetCacheCourses(fmt.Sprintf("courses_for_user_%d", userId))
+	if err != nil {
+		return dto.CourseListResponse{}, newm_helper.Trace(err)
+	}
+
+	return entity.NewCourseListResponse(cacheCourses), nil
+}
+
+func (s *courseService) CheckCourse(link string)(bool, error){
+	course, err := s.r.GetCourseByLink(link)
+	if err != nil {
+		return false, newm_helper.Trace(err)
+	}
+
+	if course.Id == 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (s *courseService) GetCoursesByUser(id int)(map[string]dto.CourseListResponse, error) {
+	resp := make(map[string]dto.CourseListResponse)
+
+	courses, err := s.r.GetCoursesByUser(id)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	for key, value := range courses {
+		resp[key] = entity.NewCourseListResponse(value)
+	}
+
+	return resp, nil
 }
 
 func (s *courseService) UpdateCourseByParam(course dto.PutUpdateCourseRequest) error {
@@ -78,7 +118,7 @@ func (s *courseService) GetShortCourses(searchValue dto.GetCourseRequest) (dto.C
 	return entity.NewCourseListResponse(courses), nil
 }
 
-func (s *courseService) GetLongCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error) {
+func (s *courseService) GetLongCourses(searchValue dto.GetCourseRequest, userId int) (dto.CourseListResponse, error) {
 	var param newm_helper.Param
 	var courses []dto.CourseList
 
@@ -134,10 +174,15 @@ func (s *courseService) GetLongCourses(searchValue dto.GetCourseRequest) (dto.Co
 				courses = append(courses, course)
 			}
 		})
-
 	}
 
-	if err := s.r.CreateCacheCourses(entity.NewCreateCourses(courses), fmt.Sprintf("%s_%d", searchValue.SearchValue, searchValue.Page)); err != nil {
+	entityCourses := entity.NewCreateCourses(courses)
+
+	if err := s.r.CreateCacheCourses(entityCourses, fmt.Sprintf("%s_%d", searchValue.SearchValue, searchValue.Page)); err != nil {
+		return dto.CourseListResponse{}, newm_helper.Trace(err)
+	}
+
+	if err := s.r.CreateCacheCourses(entityCourses, fmt.Sprintf("courses_for_user_%d", userId)); err != nil {
 		return dto.CourseListResponse{}, newm_helper.Trace(err)
 	}
 

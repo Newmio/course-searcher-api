@@ -53,14 +53,13 @@
                 </div>
 
                 <div class="history-search-btn">
-                    <button>История последних поисков</button>
+                    <button hx-get="/api/course/get/history" hx-target="#result">История последних поисков</button>
                 </div>
             </div>
 
+            <div id="result"></div>
         </div>
     </form>
-
-    <div id="result"></div>
 
 </body>
 

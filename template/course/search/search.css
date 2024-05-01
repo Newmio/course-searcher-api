@@ -195,16 +195,5 @@ body {
 }
 
 .course-link button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 16px;
-    margin: auto;
-    cursor: pointer;
-    border-radius: 5px;
-    display: block;
-    width: fit-content;
+    margin: 5px;
 }

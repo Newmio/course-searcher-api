@@ -24,16 +24,15 @@ func (r *psqlCourseRepo) initTables() error {
 		return newm_helper.Trace(err, str)
 	}
 
-	str = `create table if not exists course_info(
+	str = `create table if not exists course_user(
 		id serial primary key,
+		id_user int references users(id) on delete cascade,
 		id_course int references courses(id) on delete cascade,
 		name text default '',
-		topic text default ''
+		topic text default '',
+		date_start timestamp default now(),
+		date_end timestamp default now()
 	)`
-	_, err = r.psql.Exec(str)
-	if err != nil {
-		return newm_helper.Trace(err, str)
-	}
 
 	return nil
 }

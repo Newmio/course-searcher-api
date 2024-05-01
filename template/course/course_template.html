@@ -16,6 +16,7 @@
 <body>
 
     {{range .Courses}}
+    {{$strid := idForStr .Link}}
     <div class="course">
 
         <div class="course-img">
@@ -35,9 +36,10 @@
             <div class="duration">Длительность: {{.Duration}}</div>
             <div class="money">Цена: {{.Money}}</div>
             
+            <h5 id="{{$strid}}"></h5>
             <div class="course-link">
-                <button onclick='window.location.href = "{{.Link}}";'>Перейти</button>
-                <!--<button hx-redirect="http://localhost:8088/test">Перейти</button>-->
+                <button onclick='window.location.href = "{{.Link}}";'>Страница курса</button>
+                <button hx-get="/api/course/check?link={{.Link}}" hx-headers='{"Accept": "text/html"}' hx-target="#{{$strid}}">Запрос на прохождение курса</button>
             </div>
         </div>
     </div>

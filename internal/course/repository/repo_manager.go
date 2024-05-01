@@ -16,6 +16,8 @@ type ICourseRepo interface {
 	UpdateCourseByParam(course entity.UpdateCourse) error
 	CreateCacheCourses(courses []entity.CreateCourse, keyPrefix string) error
 	GetCacheCourses(searchValue string) ([]entity.CourseList, error)
+	GetCoursesByUser(id int) (map[string][]entity.CourseList, error)
+	GetCourseByLink(link string) (entity.CourseList, error)
 }
 
 type IPsqlCourseRepo interface {
@@ -23,6 +25,8 @@ type IPsqlCourseRepo interface {
 	CreateCourse(course entity.CreateCourse) error
 	UpdateCourse(course entity.UpdateCourse) error
 	UpdateCourseByParam(course entity.UpdateCourse) error
+	GetCoursesByUser(id int) ([]entity.CourseList, error)
+	GetCourseByLink(link string) (entity.CourseList, error)
 }
 
 type IRedisCourseRepo interface {
@@ -32,6 +36,7 @@ type IRedisCourseRepo interface {
 	UpdateGlobalCourseByParam(course entity.UpdateCourse) error
 	CreateCacheCourses(courses []entity.CreateCourse, keyPrefix string) error
 	GetCacheCourses(searchValue string) ([]entity.CourseList, error)
+	GetCoursesByUser(id int) ([]entity.CourseList, error)
 }
 
 type IHttpCourseRepo interface {
@@ -49,6 +54,24 @@ func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 	redisRepo := NewRedisCourseRepo(redis)
 	httpRepo := NewHttpCourseRepo()
 	return &managerCourseRepo{psql: psqlRepo, redis: redisRepo, http: httpRepo}
+}
+
+func (r *managerCourseRepo) GetCoursesByUser(id int) (map[string][]entity.CourseList, error){
+	psqlCourses, err := r.psql.GetCoursesByUser(id)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	redisCourses, err := r.redis.GetCoursesByUser(id)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	return map[string][]entity.CourseList{"psql": psqlCourses, "redis": redisCourses}, nil
+}
+
+func (r *managerCourseRepo) GetCourseByLink(link string) (entity.CourseList, error){
+	return r.psql.GetCourseByLink(link)
 }
 
 func (r *managerCourseRepo) GetCacheCourses(searchValue string) ([]entity.CourseList, error) {

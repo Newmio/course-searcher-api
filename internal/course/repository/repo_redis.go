@@ -19,6 +19,27 @@ func NewRedisCourseRepo(redis *redis.Client) IRedisCourseRepo {
 	return &redisCourseRepo{redis: redis}
 }
 
+func (r *redisCourseRepo) GetCoursesByUser(id int) ([]entity.CourseList, error) {
+	var courses []entity.CourseList
+
+	c, err := r.redis.LRange(context.Background(), fmt.Sprintf("course_user_%d", id), 0, -1).Result()
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	for _, v := range c {
+		var course entity.CourseList
+
+		if err := json.Unmarshal([]byte(v), &course); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		courses = append(courses, course)
+	}
+
+	return courses, nil
+}
+
 func (r *redisCourseRepo) GetCacheCourses(searchValue string) ([]entity.CourseList, error) {
 	var courses []entity.CourseList
 

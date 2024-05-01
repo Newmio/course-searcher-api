@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"searcher/internal/view/service"
 
 	"github.com/Newmio/newm_helper"
@@ -21,7 +20,7 @@ func (h *Handler) InitViewRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 	e.GET("/", func(c echo.Context) error {
 		return c.File("template/course/search/search.html")
 	}, middlewares["api"])
-	
+
 	e.GET("/login_form", func(c echo.Context) error {
 		return c.File("template/user/login/login.html")
 	})
@@ -29,11 +28,6 @@ func (h *Handler) InitViewRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 	e.GET("/profile", h.Profile, middlewares["api"])
 	e.GET("/update_profile", h.UpdateProfile, middlewares["api"])
 	e.GET("/avatars", h.GetAllDefaultAvatarNames, middlewares["api"])
-
-	e.GET("/test", func (c echo.Context) error {
-		fmt.Println("3243243242432432432")
-		return nil
-	})
 }
 
 func (h *Handler) UpdateProfile(c echo.Context) error {
