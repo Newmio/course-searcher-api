@@ -6,14 +6,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 300px;
+    margin-top: 1%;
 }
 
 .search-form {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .web-search,
@@ -21,7 +19,8 @@ body {
 .history-search {
     flex: 1; /* Растягиваем каждый блок на равную ширину */
     padding: 20px;
-    margin: 20px;
+    margin: 10px;
+    margin-top: 20px;
     background-color: #222;
     border-radius: 15px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -41,6 +40,11 @@ body {
     right: 1%;
     top: 4%; /* Можете настроить вертикальное положение элемента */
     transform: translateY(-50%);
+    display: flex;
+}
+
+.profile-container img{
+    margin-right: 10%;
 }
 
 .search-input input {
@@ -56,9 +60,11 @@ body {
     .web-search,
     .db-search,
     .history-search {
-        width: 90%; /* Ширина формы на мобильных устройствах (меньше 767px) */
-        max-width: 300px; /* Максимальная ширина для больших экранов */
-        min-width: 150px; /* Минимальная ширина для маленьких экранов */
+        min-width: 330px;
+        min-height: auto;
+        width: 90%; /* Ширина формы на больших экранах (768px и больше) */
+        max-width: 330px;   
+        margin-bottom: 1%;
     }
 }
 
@@ -67,9 +73,11 @@ body {
     .web-search,
     .db-search,
     .history-search {
-        width: 30%; /* Ширина формы на больших экранах (768px и больше) */
-        max-width: 400px; /* Максимальная ширина для больших экранов */
-        min-width: 250px; /* Минимальная ширина для маленьких экранов */
+        min-width: 330px;
+        min-height: auto;
+        width: 90%; /* Ширина формы на больших экранах (768px и больше) */
+        max-width: 330px;
+        margin-bottom: 1%;
     }
 }
 
@@ -108,9 +116,8 @@ body {
 }
 
 #result {
-    position: absolute;
+    overflow-y: scroll;
     left: 0;
-    transform: translateY(61%);
 }
 
 .course {

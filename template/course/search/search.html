@@ -15,11 +15,13 @@
 
 <body>
 
-    <div class="profile-container" onclick='window.location.href = "/profile";'>
-        <img src="template/course/search/profile-icon.jpg" alt="Avatar">
+    <div class="profile-container">
+        <img onclick='window.location.href = "/profile";' src="template/course/search/msg-icon.jpg" alt="Avatar">
+        <img onclick='window.location.href = "/profile";' src="template/course/search/profile-icon.jpg" alt="Avatar">
     </div>
 
-    <form hx-headers='{"Content-Type": "application/json", "Accept": "text/html"}' hx-ext="json-enc" hx-target="#result">
+    <form hx-headers='{"Content-Type": "application/json", "Accept": "text/html"}' hx-ext="json-enc"
+        hx-target="#result">
 
         <div class="search-input">
             <input name="search_value" type="text" placeholder="Goland Clean Architecture..."></input>
@@ -56,11 +58,9 @@
                     <button hx-get="/api/course/get/history" hx-target="#result">История последних поисков</button>
                 </div>
             </div>
-
-            <div id="result"></div>
         </div>
+        <div id="result"></div>
     </form>
-
 </body>
 
 </html>

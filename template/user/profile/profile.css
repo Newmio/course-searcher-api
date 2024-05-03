@@ -95,6 +95,7 @@ body {
     color: #fff;
     cursor: pointer;
     border-radius: 3px;
+    min-width: 120px;
 }
 
 .tabs button:hover {
@@ -116,4 +117,26 @@ body {
 
 .avatar-upload input{
     display: none;
+}
+
+/* Стили для области чата */
+.chat-container {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 5px;
+}
+/* Стили для сообщений в чате */
+.chat-message {
+    margin-bottom: 10px;
+    word-wrap: break-word; /* Перенос слов при необходимости */
+}
+.chat-message .sender {
+    font-weight: inherit;
+    color: rgb(141, 17, 208);
+}
+
+#result {
+    max-width: 350px;
 }
