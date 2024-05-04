@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"searcher/internal/user/model/dto"
 	"searcher/internal/user/service"
@@ -31,9 +32,31 @@ func (h *Handler) InitUserRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 			{
 				//update.PUT("", h.UpdateUser)
 				update.PATCH("/password", h.UpdatePassword)
+				update.PUT("/info", h.UpdateUserInfo)
 			}
 		}
 	}
+}
+
+func (h *Handler) UpdateUserInfo(c echo.Context) error {
+	var info dto.CreatUserInfoRequest
+
+	if err := c.Bind(&info); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if c.Get("role").(string) != "admin" {
+		info.IdUser = strconv.Itoa(c.Get("userId").(int))
+	}
+
+	if err := h.s.UpdateUserInfo(info); err != nil {
+		fmt.Println(err)
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	c.Response().Header().Set("HX-Redirect", "/profile")
+
+	return c.JSON(200, nil)
 }
 
 func (h *Handler) UpdatePassword(c echo.Context) error {
@@ -99,19 +122,19 @@ func (h *Handler) Login(c echo.Context) error {
 
 	if cookie {
 		c.SetCookie(&http.Cookie{
-			Name:  "access",
-			Value: "Bearer " + tokens.Access,
-			Path:  "/",
-			MaxAge: tokens.Exp,
-			Secure: false,
+			Name:     "access",
+			Value:    "Bearer " + tokens.Access,
+			Path:     "/",
+			MaxAge:   tokens.Exp,
+			Secure:   false,
 			HttpOnly: true,
 		})
 		c.SetCookie(&http.Cookie{
-			Name:  "refresh",
-			Value: "Bearer " + tokens.Refresh,
-			Path:  "/",
-			MaxAge: tokens.ExpRefresh,
-			Secure: false,
+			Name:     "refresh",
+			Value:    "Bearer " + tokens.Refresh,
+			Path:     "/",
+			MaxAge:   tokens.ExpRefresh,
+			Secure:   false,
 			HttpOnly: true,
 		})
 	}

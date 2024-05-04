@@ -21,6 +21,60 @@ func NewPsqlUserRepo(db *sqlx.DB) IPsqlUserRepo {
 	return r
 }
 
+func (r *psqlUserRepo) GetUserInfo(userId int) (entity.GetUserInfo, error) {
+	var info entity.GetUserInfo
+
+	str := `select * from user_info where id_user = $1`
+
+	if err := r.db.Get(&info, str, userId); err != nil {
+		if err != sql.ErrNoRows {
+			return entity.GetUserInfo{}, newm_helper.Trace(err, str)
+		}
+	}
+
+	return info, nil
+}
+
+func (r *psqlUserRepo) UpdateUserInfo(info entity.CreateUserInfo) error {
+	str := `update user_info set name = $1, middle_name = $2, last_name = $3, course_number = $4, group_name = $5, 
+	proffession = $6, proffession_number = $7 where id_user = $8`
+
+	_, err := r.db.Exec(str, info.Name, info.MiddleName, info.LastName, info.CourseNumber, info.GroupName,
+		info.Proffession, info.ProffessionNumber, info.IdUser)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
+func (r *psqlUserRepo) CreateUserInfo(info entity.CreateUserInfo) error {
+	var id int
+
+	str := "select id from user_info where id_user = $1"
+
+	if err := r.db.QueryRow(str, info.IdUser).Scan(&id); err != nil {
+		if err != sql.ErrNoRows {
+			return newm_helper.Trace(err, str)
+		}
+	}
+
+	if id != 0 {
+		return fmt.Errorf("info exists")
+	}
+
+	str = `insert into user_info(id_user, name, middle_name, last_name, course_number, group_name, proffession, proffession_number) 
+	values($1, $2, $3, $4, $5, $6, $7, $8)`
+
+	_, err := r.db.Exec(str, info.IdUser, info.Name, info.MiddleName, info.LastName,
+		info.CourseNumber, info.GroupName, info.Proffession, info.ProffessionNumber)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
 func (r *psqlUserRepo) GetUserById(id int) (entity.GetUser, error) {
 	var user entity.GetUser
 
@@ -81,12 +135,12 @@ func (r *psqlUserRepo) GetUser(login, password string) (entity.GetUser, error) {
 	return user, nil
 }
 
-func (db *psqlUserRepo) CreateUser(user entity.CreateUser) error {
+func (r *psqlUserRepo) CreateUser(user entity.CreateUser) error {
 	var id int
 
 	str := "select id from users where login = $1"
 
-	if err := db.db.QueryRow(str, user.Login).Scan(&id); err != nil {
+	if err := r.db.QueryRow(str, user.Login).Scan(&id); err != nil {
 		if err != sql.ErrNoRows {
 			return newm_helper.Trace(err, str)
 		}
@@ -98,7 +152,7 @@ func (db *psqlUserRepo) CreateUser(user entity.CreateUser) error {
 
 	str = `insert into users(login, password, email, role, avatar, date_create) values($1, $2, $3, $4, $5, $6)`
 
-	_, err := db.db.Exec(str, user.Login, user.Password, user.Email, user.Role, user.Avatar, user.DateCreate)
+	_, err := r.db.Exec(str, user.Login, user.Password, user.Email, user.Role, user.Avatar, user.DateCreate)
 	if err != nil {
 		return newm_helper.Trace(err, str)
 	}

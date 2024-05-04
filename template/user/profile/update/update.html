@@ -8,22 +8,31 @@
                 <div class="avatar-upload">
                     <button>Выбрать дефольную аватарку</button>
 
-                    <form  hx-get="/test">
+                    <form hx-get="/test">
                         <input type="file" id="avatarFile"></input>
-                    <label for="avatarFile">Загрузить</label>
+                        <label for="avatarFile">Загрузить</label>
                     </form>
                 </div>
             </div>
 
-            <div class="profile-info">
-                <input type="text" placeholder="{{.Login}}" value="{{.Login}}"></input>
-                <input type="email" placeholder="{{.Email}}" value="{{.Email}}"></input>
-                <input type="text" placeholder="Номер не указан" value="{{.Phone}}"></input>
-                <input type="text" placeholder="Имя не указано" value=""></input>
-                <input type="text" placeholder="Фамилия не указана" value=""></input>
-                <input type="text" placeholder="Отчество не указано" value=""></input>
-                <input type="text" placeholder="Группа не указана" value=""></input>
-            </div>
+            <form hx-put="/api/user/update/info" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+                <div class="profile-info">
+                    {{$display := `style="display: none;"`}}
+                    {{if eq .Role "admin"}}{{$display = `style="display: block;"`}}{{end}}
+                    <input name="id_user" {{$display}} type="number" placeholder="{{.Id}}" value="{{.Id}}"></input>
+                    <input name="email" type="email" placeholder="{{.Email}}" value="{{.Email}}"></input>
+                    <input name="phone" type="text" placeholder="Номер не указан" value="{{.Phone}}"></input>
+                    <input name="name" type="text" placeholder="Имя не указано" value="{{.Name}}"></input>
+                    <input name="middle_name" type="text" placeholder="Фамилия не указана" value="{{.MiddleName}}"></input>
+                    <input name="last_name" type="text" placeholder="Отчество не указано" value="{{.LastName}}"></input>
+                    <input name="course_number" type="number" placeholder="Номер курса не указан" value="{{.CourseNumber}}"></input>
+                    <input name="group_name" type="text" placeholder="Группа не указана" value="{{.GroupName}}"></input>
+                    <input name="proffession" type="text" placeholder="Специальность не указана" value="{{.Proffession}}"></input>
+                    <input name="proffession_number" type="text" placeholder="Номер специальности не указан" value="{{.ProffessionNumber}}"></input>
+                    <button class="edit-profile-btn" type="submit">Обновить</button>
+                    <button onclick='window.location.href = "/profile";' class="edit-profile-btn">Отмена</button>
+                </div>
+            </form>
 
         </div>
 </body>

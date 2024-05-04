@@ -29,7 +29,40 @@ func (s *viewService) GetUserProfile(id int, directory string) (string, error) {
 		return "", newm_helper.Trace(err)
 	}
 
-	return newm_helper.RenderHtml(directory, user)
+	info, err := s.rUser.GetUserInfo(user.Id)
+	if err != nil {
+		return "", newm_helper.Trace(err)
+	}
+
+	data := struct{
+		Id int
+		Role string
+		Email string
+		Phone string
+		Avatar string
+		Name string
+		MiddleName string
+		LastName string
+		CourseNumber int
+		GroupName string
+		Proffession string
+		ProffessionNumber string
+	}{
+		Id:        user.Id,
+		Role:      user.Role,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		Avatar:    user.Avatar,
+		Name:      info.Name,
+		MiddleName: info.MiddleName,
+		LastName:  info.LastName,
+		CourseNumber: info.CourseNumber,
+		GroupName: info.GroupName,
+		Proffession: info.Proffession,
+		ProffessionNumber: info.ProffessionNumber,
+	}
+
+	return newm_helper.RenderHtml(directory, data)
 }
 
 func (s *viewService) GetAllDefaultAvatarNames() (string, error) {

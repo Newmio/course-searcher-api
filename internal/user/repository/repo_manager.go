@@ -3,6 +3,7 @@ package repository
 import (
 	"searcher/internal/user/model/entity"
 
+	"github.com/Newmio/newm_helper"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -12,6 +13,8 @@ type IUserRepo interface {
 	UpdateUser(user entity.UpdateUser) error
 	UpdatePassword(user entity.UpdateUserPassword) error
 	GetUserById(id int) (entity.GetUser, error)
+	UpdateUserInfo(info entity.CreateUserInfo) error
+	GetUserInfo(userId int) (entity.GetUserInfo, error)
 }
 
 type IPsqlUserRepo interface {
@@ -20,6 +23,9 @@ type IPsqlUserRepo interface {
 	UpdateUser(user entity.UpdateUser) error
 	UpdatePassword(user entity.UpdateUserPassword) error
 	GetUserById(id int) (entity.GetUser, error)
+	CreateUserInfo(info entity.CreateUserInfo) error
+	UpdateUserInfo(info entity.CreateUserInfo) error
+	GetUserInfo(userId int) (entity.GetUserInfo, error)
 }
 
 type managerUserRepo struct {
@@ -29,6 +35,19 @@ type managerUserRepo struct {
 func NewManagerUserRepo(psql *sqlx.DB) IUserRepo {
 	psqlRepo := NewPsqlUserRepo(psql)
 	return &managerUserRepo{psql: psqlRepo}
+}
+
+func (r *managerUserRepo) UpdateUserInfo(info entity.CreateUserInfo) error {
+	if err := r.psql.CreateUserInfo(info); err != nil {
+		if err.Error() != "info exists" {
+			return newm_helper.Trace(err)
+		}
+	}
+	return r.psql.UpdateUserInfo(info)
+}
+
+func (r *managerUserRepo) GetUserInfo(userId int) (entity.GetUserInfo, error){
+	return r.psql.GetUserInfo(userId)
 }
 
 func (r *managerUserRepo) GetUserById(id int) (entity.GetUser, error) {

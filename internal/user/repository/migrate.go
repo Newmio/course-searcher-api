@@ -25,6 +25,7 @@ func (db *psqlUserRepo) initTables() error {
 		name text default '',
 		middle_name text default '',
 		last_name text default '',
+		course_number int default 1,
 		group_name text default '',
 		proffession text default '',
 		proffession_number text default ''

@@ -37,6 +37,7 @@ type IUserService interface {
 	Login(userReq dto.LoginUserRequest) (dto.LoginUserResponse, error)
 	UpdateUser(user dto.UpdateUserRequest) error
 	UpdatePassword(user dto.UpdateUserPasswordRequest) error
+	UpdateUserInfo(info dto.CreatUserInfoRequest) error
 }
 
 type userService struct {
@@ -45,6 +46,19 @@ type userService struct {
 
 func NewUserService(r repository.IUserRepo) IUserService {
 	return &userService{r: r}
+}
+
+func (s *userService) GetUserInfo(userId int) (dto.GetUserInfoResponse, error){
+	info, err := s.r.GetUserInfo(userId)
+	if err != nil {
+		return dto.GetUserInfoResponse{}, err
+	}
+
+	return entity.NewGetUserInfoResponse(info), nil
+}
+
+func (s *userService) UpdateUserInfo(info dto.CreatUserInfoRequest) error{
+	return s.r.UpdateUserInfo(entity.NewCreateUserInfo(info))
 }
 
 func (s *userService) UpdatePassword(user dto.UpdateUserPasswordRequest) error {

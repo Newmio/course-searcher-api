@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"searcher/internal/view/service"
 
 	"github.com/Newmio/newm_helper"
@@ -35,6 +36,7 @@ func (h *Handler) UpdateProfile(c echo.Context) error {
 
 	html, err := h.s.GetUserProfile(id, "template/user/profile/update/update.html")
 	if err != nil {
+		fmt.Println(err)
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 

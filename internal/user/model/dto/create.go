@@ -5,6 +5,17 @@ import (
 	"strings"
 )
 
+type CreatUserInfoRequest struct {
+	IdUser            string    `json:"id_user"`
+	Name              string `json:"name"`
+	MiddleName        string `json:"middle_name"`
+	LastName          string `json:"last_name"`
+	CourseNumber      string    `json:"course_number"`
+	GroupName         string `json:"group_name"`
+	Proffession       string `json:"proffession"`
+	ProffessionNumber string `json:"proffession_number"`
+}
+
 type RegisterUserRequest struct {
 	Login    string `json:"login" xml:"login"`
 	Email    string `json:"email" xml:"email"`
