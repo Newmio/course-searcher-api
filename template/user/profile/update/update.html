@@ -15,13 +15,20 @@
                 </div>
             </div>
 
-            <form hx-put="/api/user/update/info" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
-                <div class="profile-info">
-                    {{$display := `style="display: none;"`}}
-                    {{if eq .Role "admin"}}{{$display = `style="display: block;"`}}{{end}}
-                    <input name="id_user" {{$display}} type="number" placeholder="{{.Id}}" value="{{.Id}}"></input>
-                    <input name="email" type="email" placeholder="{{.Email}}" value="{{.Email}}"></input>
+            <div class="profile-info">
+
+                <form hx-put="/api/user/update" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+
+                    <input name="id" style="display: none;" type="number" placeholder="{{.Id}}" value="{{.Id}}"></input>
+                    <input name="email" type="email" placeholder="" value="{{.Email}}"></input>
                     <input name="phone" type="text" placeholder="Номер не указан" value="{{.Phone}}"></input>
+                    <button style="margin-bottom: 10px;" class="edit-profile-btn" type="submit">Обновить аккаунт</button>
+
+                </form>
+
+                <form hx-put="/api/user/update/info" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+
+                    <input name="id_user" style="display: none;" type="number" placeholder="{{.Id}}" value="{{.Id}}"></input>
                     <input name="name" type="text" placeholder="Имя не указано" value="{{.Name}}"></input>
                     <input name="middle_name" type="text" placeholder="Фамилия не указана" value="{{.MiddleName}}"></input>
                     <input name="last_name" type="text" placeholder="Отчество не указано" value="{{.LastName}}"></input>
@@ -29,10 +36,11 @@
                     <input name="group_name" type="text" placeholder="Группа не указана" value="{{.GroupName}}"></input>
                     <input name="proffession" type="text" placeholder="Специальность не указана" value="{{.Proffession}}"></input>
                     <input name="proffession_number" type="text" placeholder="Номер специальности не указан" value="{{.ProffessionNumber}}"></input>
-                    <button class="edit-profile-btn" type="submit">Обновить</button>
-                    <button onclick='window.location.href = "/profile";' class="edit-profile-btn">Отмена</button>
-                </div>
-            </form>
+                    <button style="margin-bottom: 5px;" class="edit-profile-btn" type="submit">Обновить информацию</button>
+                </form>
+
+                <button onclick='window.location.href = "/profile";' class="edit-profile-btn">Отмена</button>
+            </div>
 
         </div>
 </body>

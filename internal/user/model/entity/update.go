@@ -2,6 +2,7 @@ package entity
 
 import (
 	"searcher/internal/user/model/dto"
+	"strconv"
 )
 
 type UpdateUserPassword struct {
@@ -16,8 +17,13 @@ type UpdateUser struct {
 }
 
 func NewUpdateUser(user dto.UpdateUserRequest) UpdateUser {
+	id, err := strconv.Atoi(user.Id)
+	if err != nil {
+		return UpdateUser{}
+	}
+
 	return UpdateUser{
-		Id:    user.Id,
+		Id:    id,
 		Email: user.Email,
 		Phone: user.Phone,
 	}

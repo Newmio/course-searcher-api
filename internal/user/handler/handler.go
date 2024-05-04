@@ -30,7 +30,7 @@ func (h *Handler) InitUserRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 		{
 			update := user.Group("/update")
 			{
-				//update.PUT("", h.UpdateUser)
+				update.PUT("", h.UpdateUser)
 				update.PATCH("/password", h.UpdatePassword)
 				update.PUT("/info", h.UpdateUserInfo)
 			}
@@ -66,7 +66,9 @@ func (h *Handler) UpdatePassword(c echo.Context) error {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	user.Id = c.Get("userId").(int)
+	if c.Get("role").(string) != "admin" {
+		user.Id = c.Get("userId").(int)
+	}
 
 	if err := user.Validate(); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
@@ -86,7 +88,9 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	user.Id = c.Get("userId").(int)
+	if c.Get("role").(string) != "admin" {
+		user.Id = strconv.Itoa(c.Get("userId").(int))
+	}
 
 	if err := user.Validate(); err != nil {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
@@ -95,6 +99,8 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	if err := h.s.UpdateUser(user); err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
+
+	c.Response().Header().Set("HX-Redirect", "/profile")
 
 	return c.JSON(200, nil)
 }

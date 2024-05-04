@@ -6,7 +6,7 @@ import (
 )
 
 type UpdateUserRequest struct {
-	Id    int    `json:"id" xml:"id"`
+	Id    string `json:"id" xml:"id"`
 	Email string `json:"email" xml:"email"`
 	Phone string `json:"phone" xml:"phone"`
 }
