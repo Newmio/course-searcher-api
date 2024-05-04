@@ -5,6 +5,11 @@ import (
 	"strings"
 )
 
+type UpdateUserAvatarRequest struct {
+	Id     string `json:"id" xml:"id"`
+	Avatar string `json:"avatar" xml:"avatar"`
+}
+
 type UpdateUserRequest struct {
 	Id    string `json:"id" xml:"id"`
 	Email string `json:"email" xml:"email"`

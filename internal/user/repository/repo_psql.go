@@ -21,6 +21,17 @@ func NewPsqlUserRepo(db *sqlx.DB) IPsqlUserRepo {
 	return r
 }
 
+func (r *psqlUserRepo) UpdateUserAvatar(userId int, avatar string) error {
+	str := `update users set avatar = $1 where id = $2`
+
+	_, err := r.db.Exec(str, avatar, userId)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
 func (r *psqlUserRepo) GetUserInfo(userId int) (entity.GetUserInfo, error) {
 	var info entity.GetUserInfo
 

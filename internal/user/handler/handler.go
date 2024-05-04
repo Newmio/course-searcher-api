@@ -33,9 +33,30 @@ func (h *Handler) InitUserRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 				update.PUT("", h.UpdateUser)
 				update.PATCH("/password", h.UpdatePassword)
 				update.PUT("/info", h.UpdateUserInfo)
+				update.PUT("/avatar", h.UpdateUserAvatar)
 			}
 		}
 	}
+}
+
+func (h *Handler) UpdateUserAvatar(c echo.Context) error {
+	var user dto.UpdateUserAvatarRequest
+
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if c.Get("role").(string) != "admin" {
+		user.Id = strconv.Itoa(c.Get("userId").(int))
+	}
+
+	if err := h.s.UpdateUserAvatar(user); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	c.Response().Header().Set("HX-Redirect", "/profile")
+
+	return c.JSON(200, nil)
 }
 
 func (h *Handler) UpdateUserInfo(c echo.Context) error {

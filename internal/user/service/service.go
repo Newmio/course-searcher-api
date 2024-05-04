@@ -6,6 +6,7 @@ import (
 	"searcher/internal/user/model/dto"
 	"searcher/internal/user/model/entity"
 	"searcher/internal/user/repository"
+	"strconv"
 	"time"
 
 	"github.com/Newmio/newm_helper"
@@ -38,6 +39,7 @@ type IUserService interface {
 	UpdateUser(user dto.UpdateUserRequest) error
 	UpdatePassword(user dto.UpdateUserPasswordRequest) error
 	UpdateUserInfo(info dto.CreatUserInfoRequest) error
+	UpdateUserAvatar(user dto.UpdateUserAvatarRequest) error
 }
 
 type userService struct {
@@ -46,6 +48,15 @@ type userService struct {
 
 func NewUserService(r repository.IUserRepo) IUserService {
 	return &userService{r: r}
+}
+
+func (s *userService) UpdateUserAvatar(user dto.UpdateUserAvatarRequest) error{
+	id, err := strconv.Atoi(user.Id)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return s.r.UpdateUserAvatar(id, user.Avatar)
 }
 
 func (s *userService) GetUserInfo(userId int) (dto.GetUserInfoResponse, error){

@@ -53,7 +53,7 @@ body {
 
 .edit-profile-btn {
     display: block;
-    margin: auto; /* Это выравнивает кнопку по горизонтали */
+    margin: 0 auto; /* Это выравнивает кнопку по горизонтали */
     text-align: center; /* Это выравнивает текст кнопки по центру кнопки */
     width: 150px;
 }

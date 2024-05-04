@@ -15,6 +15,7 @@ type IUserRepo interface {
 	GetUserById(id int) (entity.GetUser, error)
 	UpdateUserInfo(info entity.CreateUserInfo) error
 	GetUserInfo(userId int) (entity.GetUserInfo, error)
+	UpdateUserAvatar(userId int, avatar string) error
 }
 
 type IPsqlUserRepo interface {
@@ -26,6 +27,7 @@ type IPsqlUserRepo interface {
 	CreateUserInfo(info entity.CreateUserInfo) error
 	UpdateUserInfo(info entity.CreateUserInfo) error
 	GetUserInfo(userId int) (entity.GetUserInfo, error)
+	UpdateUserAvatar(userId int, avatar string) error
 }
 
 type managerUserRepo struct {
@@ -44,6 +46,10 @@ func (r *managerUserRepo) UpdateUserInfo(info entity.CreateUserInfo) error {
 		}
 	}
 	return r.psql.UpdateUserInfo(info)
+}
+
+func (r *managerUserRepo) UpdateUserAvatar(userId int, avatar string) error{
+	return r.psql.UpdateUserAvatar(userId, avatar)
 }
 
 func (r *managerUserRepo) GetUserInfo(userId int) (entity.GetUserInfo, error){

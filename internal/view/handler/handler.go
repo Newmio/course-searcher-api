@@ -55,8 +55,9 @@ func (h *Handler) Profile(c echo.Context) error {
 }
 
 func (h *Handler) GetAllDefaultAvatarNames(c echo.Context) error {
-	html, err := h.s.GetAllDefaultAvatarNames()
+	html, err := h.s.GetAllDefaultAvatarNames(c.Get("userId").(int))
 	if err != nil {
+		fmt.Println(err)
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 

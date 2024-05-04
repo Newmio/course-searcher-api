@@ -5,17 +5,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль аккаунта</title>
-    <link rel="stylesheet" href="template/user/profile/update/update.css">
+    <link rel="stylesheet" href="template/user/profile/update/avatar.css">
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous">
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js"></script>
 </head>
 
 <body>
     {{$x := 0}}
+    {{$userId := .Id}}
     <div class="avatar-container">
         {{range $index, $value := .Names}}
-        <img src="template/user/profile/avatars/{{$value}}" alt="Avatar">
+
+        <form hx-put="/api/user/update/avatar" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+            <input name="id" style="display: none;" type="number" value="{{$userId}}"></input>
+            <input name="avatar" style="display: none;" type="text" value="template/user/profile/avatars/{{$value}}"></input>
+            <input src="template/user/profile/avatars/{{$value}}" type="image" alt="Submit">
+        </form>
+
         {{$x = (add $x 1)}}
         {{if eq $x 3}}
-            {{$x = 0}}
+        {{$x = 0}}
     </div>
     <div class="avatar-container">
         {{end}}
