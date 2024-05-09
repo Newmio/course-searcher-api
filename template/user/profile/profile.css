@@ -141,3 +141,41 @@ body {
 #result {
     max-width: 350px;
 }
+
+/*CHAT LIST*/
+
+.chat-list {
+    list-style-type: none;
+    padding: 0;
+}
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.avatar-chat-container {
+    margin-right: 10px;
+    display: flex;
+    justify-content: center;
+}
+.avatar-chat-container img{
+    max-width: 200%;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+.user-info {
+    flex-grow: 1;
+}
+.username {
+    font-weight: bold;
+}
+.last-message {
+    color: #888;
+}
+.chat-item:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}

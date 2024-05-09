@@ -16,6 +16,8 @@ type IUserRepo interface {
 	UpdateUserInfo(info entity.CreateUserInfo) error
 	GetUserInfo(userId int) (entity.GetUserInfo, error)
 	UpdateUserAvatar(userId int, avatar string) error
+	GetAllAdmins()([]entity.GetUser, error)
+	GetUsersByGroupName(group string)([]entity.GetUser, error)
 }
 
 type IPsqlUserRepo interface {
@@ -28,6 +30,8 @@ type IPsqlUserRepo interface {
 	UpdateUserInfo(info entity.CreateUserInfo) error
 	GetUserInfo(userId int) (entity.GetUserInfo, error)
 	UpdateUserAvatar(userId int, avatar string) error
+	GetAllAdmins()([]entity.GetUser, error)
+	GetUsersByGroupName(group string)([]entity.GetUser, error)
 }
 
 type managerUserRepo struct {
@@ -37,6 +41,14 @@ type managerUserRepo struct {
 func NewManagerUserRepo(psql *sqlx.DB) IUserRepo {
 	psqlRepo := NewPsqlUserRepo(psql)
 	return &managerUserRepo{psql: psqlRepo}
+}
+
+func (r *managerUserRepo) GetUsersByGroupName(group string)([]entity.GetUser, error){
+	return r.psql.GetUsersByGroupName(group)
+}
+
+func (r *managerUserRepo) GetAllAdmins()([]entity.GetUser, error){
+	return r.psql.GetAllAdmins()
 }
 
 func (r *managerUserRepo) UpdateUserInfo(info entity.CreateUserInfo) error {

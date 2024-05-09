@@ -21,6 +21,49 @@ func NewPsqlUserRepo(db *sqlx.DB) IPsqlUserRepo {
 	return r
 }
 
+func (r *psqlUserRepo) GetUsersByGroupName(group string)([]entity.GetUser, error){
+	var users []entity.GetUser
+	var id []int
+
+	str := `select id_user from user_info where group_name = $1`
+
+	if err := r.db.Select(&id, str, group); err != nil{
+		return nil, newm_helper.Trace(err, str)
+	}
+
+	str = `select * from users where id = $1`
+
+	stmt, err := r.db.Preparex(str)
+	if err != nil{
+		return nil, newm_helper.Trace(err)
+	}
+	defer stmt.Close()
+
+	for _, value := range id{
+		var user entity.GetUser
+
+		if err := stmt.Select(&user, value); err != nil{
+			return nil, newm_helper.Trace(err, str)
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+func (r *psqlUserRepo) GetAllAdmins()([]entity.GetUser, error) {
+	var users []entity.GetUser
+
+	str := `select * from users where role = 'admin'`
+
+	if err := r.db.Select(&users, str); err != nil {
+		return nil, newm_helper.Trace(err, str)
+	}
+
+	return users, nil
+}
+
 func (r *psqlUserRepo) UpdateUserAvatar(userId int, avatar string) error {
 	str := `update users set avatar = $1 where id = $2`
 

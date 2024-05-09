@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 	"fmt"
-	"searcher/internal/app/db"
+	"searcher/internal/app/storage"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
@@ -19,7 +19,7 @@ func OpenDb() (*redis.Client, error) {
 		return nil, err
 	}
 
-	db, err := initDb(db.Config{
+	db, err := initDb(storage.Config{
 		Host:     v.GetString("host"),
 		Port:     v.GetString("port"),
 		User:     v.GetString("user"),
@@ -33,7 +33,7 @@ func OpenDb() (*redis.Client, error) {
 	return db, nil
 }
 
-func initDb(c db.Config) (*redis.Client, error) {
+func initDb(c storage.Config) (*redis.Client, error) {
 	dbName, err := strconv.Atoi(c.DbName)
 	if err != nil {
 		return nil, err

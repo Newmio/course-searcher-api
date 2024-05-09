@@ -29,6 +29,22 @@ func (h *Handler) InitViewRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 	e.GET("/profile", h.Profile, middlewares["api"])
 	e.GET("/update_profile", h.UpdateProfile, middlewares["api"])
 	e.GET("/avatars", h.GetAllDefaultAvatarNames, middlewares["api"])
+	e.GET("/chat_menu", h.GetChatUsers, middlewares["api"])
+}
+
+func (h *Handler) GetChatUsers(c echo.Context)error{
+	var group string
+
+	if c.Get("role").(string) == "admin"{
+		group = c.QueryParam("group")
+	}
+
+	html, err := h.s.GetChatUsers(group, "template/user/chat/chat-menu.html", c.Get("userId").(int))
+	if err != nil{
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.HTML(200, html)
 }
 
 func (h *Handler) UpdateProfile(c echo.Context) error {

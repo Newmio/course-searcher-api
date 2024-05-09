@@ -1,6 +1,15 @@
-<div class="chat-container">
-    <div class="chat-message">
-        <span class="sender">Пользователь 1:</span>
-        <span class="message-body">Привет, как дела?</span>
+<div class="chat-list">
+
+    {{range .Users}}
+    <div class="chat-item">
+        <div class="avatar-chat-container">
+            <img src="{{.Avatar}}" alt="Avatar">
+        </div>
+        <div class="user-info">
+            <span class="username">{{.Name}} {{.LastName}}<br></span>
+            <span class="last-message">{{.LastMessage}}</span>
+        </div>
     </div>
+    {{end}}
+
 </div>

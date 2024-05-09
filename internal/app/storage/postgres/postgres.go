@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"fmt"
-	"searcher/internal/app/db"
+	"searcher/internal/app/storage"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
@@ -17,7 +17,7 @@ func OpenDb() (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	db, err := initDb(db.Config{
+	db, err := initDb(storage.Config{
 		Host:     v.GetString("host"),
 		Port:     v.GetString("port"),
 		User:     v.GetString("user"),
@@ -32,7 +32,7 @@ func OpenDb() (*sqlx.DB, error) {
 	return db, nil
 }
 
-func initDb(c db.Config) (*sqlx.DB, error) {
+func initDb(c storage.Config) (*sqlx.DB, error) {
 	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
 		c.Host, c.Port, c.User, c.DbName, c.Password, c.SslMode))
 	if err != nil {
