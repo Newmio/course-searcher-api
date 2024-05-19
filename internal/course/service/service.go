@@ -50,6 +50,7 @@ type ICourseService interface {
 	GetCoursesByUser(id int)(map[string]dto.CourseListResponse, error)
 	CheckCourse(link string)(bool, error)
 	GetCacheCoursesByUser(userId int) (dto.CourseListResponse, error)
+	CreateCourseEvent(value []byte) error
 }
 
 type courseService struct {
@@ -58,6 +59,10 @@ type courseService struct {
 
 func NewCourseService(r repository.ICourseRepo) ICourseService {
 	return &courseService{r: r}
+}
+
+func (s *courseService) CreateCourseEvent(value []byte) error{
+	return s.r.CreateCourseEvent(value)
 }
 
 func (s *courseService) GetCacheCoursesByUser(userId int) (dto.CourseListResponse, error) {

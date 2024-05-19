@@ -39,8 +39,7 @@ type managerUserRepo struct {
 }
 
 func NewManagerUserRepo(psql *sqlx.DB) IUserRepo {
-	psqlRepo := NewPsqlUserRepo(psql)
-	return &managerUserRepo{psql: psqlRepo}
+	return &managerUserRepo{psql: NewPsqlUserRepo(psql)}
 }
 
 func (r *managerUserRepo) GetUsersByGroupName(group string)([]entity.GetUser, error){

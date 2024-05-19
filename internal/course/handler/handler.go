@@ -36,6 +36,14 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 			course.GET("/check", h.CheckCourse)
 		}
 	}
+	e.GET("/test", h.T)
+}
+
+func (h *Handler) T(c echo.Context) error {
+	if err := h.s.CreateCourseEvent([]byte("test")); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+	return c.JSON(200, nil)
 }
 
 func (h *Handler) GetCoursesHistory(c echo.Context) error {

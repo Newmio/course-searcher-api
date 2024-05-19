@@ -10,14 +10,15 @@ import (
 
 func OpenDb() (*sqlx.DB, error) {
 	v := viper.New()
-	v.AddConfigPath("internal/app/db/postgres")
+	v.AddConfigPath("internal/app/storage/postgres")
 	v.SetConfigName("config")
+	
 	err := v.ReadInConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := initDb(storage.Config{
+	return initDb(storage.Config{
 		Host:     v.GetString("host"),
 		Port:     v.GetString("port"),
 		User:     v.GetString("user"),
@@ -25,11 +26,6 @@ func OpenDb() (*sqlx.DB, error) {
 		DbName:   v.GetString("dbName"),
 		SslMode:  v.GetString("sslMode"),
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }
 
 func initDb(c storage.Config) (*sqlx.DB, error) {

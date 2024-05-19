@@ -55,8 +55,8 @@ func (h *Handler) InitFileRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 		}
 	}
 
-	e.GET("/test", h.Test)
-	e.GET("/test2", h.Test2)
+	// e.GET("/test", h.Test)
+	// e.GET("/test2", h.Test2)
 }
 
 func (h *Handler) Test2(c echo.Context) error {

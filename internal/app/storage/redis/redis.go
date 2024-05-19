@@ -12,25 +12,21 @@ import (
 
 func OpenDb() (*redis.Client, error) {
 	v := viper.New()
-	v.AddConfigPath("internal/app/db/redis")
+	v.AddConfigPath("internal/app/storage/redis")
 	v.SetConfigName("config")
+	
 	err := v.ReadInConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := initDb(storage.Config{
+	return initDb(storage.Config{
 		Host:     v.GetString("host"),
 		Port:     v.GetString("port"),
 		User:     v.GetString("user"),
 		Password: v.GetString("password"),
 		DbName:   v.GetString("dbName"),
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }
 
 func initDb(c storage.Config) (*redis.Client, error) {

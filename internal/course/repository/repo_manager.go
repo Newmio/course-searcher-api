@@ -3,6 +3,7 @@ package repository
 import (
 	"searcher/internal/course/model/entity"
 
+	"github.com/IBM/sarama"
 	"github.com/Newmio/newm_helper"
 	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
@@ -18,6 +19,11 @@ type ICourseRepo interface {
 	GetCacheCourses(searchValue string) ([]entity.CourseList, error)
 	GetCoursesByUser(id int) (map[string][]entity.CourseList, error)
 	GetCourseByLink(link string) (entity.CourseList, error)
+	CreateCourseEvent(value []byte) error
+}
+
+type IKafkaCourseRepo interface{
+	CreateCourseEvent(value []byte) error
 }
 
 type IPsqlCourseRepo interface {
@@ -47,13 +53,20 @@ type managerCourseRepo struct {
 	psql  IPsqlCourseRepo
 	redis IRedisCourseRepo
 	http  IHttpCourseRepo
+	kafka IKafkaCourseRepo
 }
 
-func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
-	psqlRepo := NewPsqlCourseRepo(psql)
-	redisRepo := NewRedisCourseRepo(redis)
-	httpRepo := NewHttpCourseRepo()
-	return &managerCourseRepo{psql: psqlRepo, redis: redisRepo, http: httpRepo}
+func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client, kafka sarama.Client) ICourseRepo {
+	return &managerCourseRepo{
+		psql: NewPsqlCourseRepo(psql), 
+		redis: NewRedisCourseRepo(redis), 
+		http: NewHttpCourseRepo(),
+		kafka: NewKafkaCourseRepo(kafka),
+	}
+}
+
+func (r *managerCourseRepo) CreateCourseEvent(value []byte) error{
+	return r.kafka.CreateCourseEvent(value)
 }
 
 func (r *managerCourseRepo) GetCoursesByUser(id int) (map[string][]entity.CourseList, error){

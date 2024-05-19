@@ -15,7 +15,7 @@ import (
 
 const (
 	SALT       = "fwfjsndfwdqwdqwuriiotncna23219nsncjancasncuenfen834832u0423u094239jdjsanjsiqepee33425e1rqwftdyvghsuqw78e6trgdhbsuw3e7ref"
-	ACCESSKEY    = "ncaeuwbcewr43943qfb8340hdq4t93q48ugmx9bgbfbydsbufxy6g37b2qg6fxbg67b4gfbxq6xf7x349q6gf76gew7gqf67xg4qf76g437fggf6gwefg"
+	ACCESSKEY  = "ncaeuwbcewr43943qfb8340hdq4t93q48ugmx9bgbfbydsbufxy6g37b2qg6fxbg67b4gfbxq6xf7x349q6gf76gew7gqf67xg4qf76g437fggf6gwefg"
 	REFRESHKEY = "fjdhsjdkfjcnfjsoeorowmamxnswyfjvkjxkisporognfhsuwjeoosjshgdivifiebejhwefjweooeiwoirbvcbnnsuweybfwfbdyhbwybfwueyyw" +
 		"weybfiwbfhbveywbfiewbfniewhnfdiuqwenfiewbvhwtrngiqubnrifybieryqbywwqebgcmoquyxmouyrgfxoqurguyxmuy4ghxueyaugxmaeygmfxaeymuyeggyu" +
 		"fuebfuyerbavuearybfuyebrfuberauygboreyabguvyabhsuhfbuvyaewrbfouyaerbgvuobzbmyuaweogmfoeruyagouygbaeuyrbguyearbgxemryaguybagbgyu" +
@@ -23,7 +23,7 @@ const (
 		"zmyerwbvzeroivrteiuwhbmouvxyhxmbeuywhgxvneryagnuxearuybveiruhfuihaweyfhaeruygfbuyhbuywqbufyberuybofnuerogbyeurbgyerbaguyebruagb" +
 		"nvxertwyfuviywerbmfxgerwuygbuywerbgfuyeruyfyrsuegbuvydfbaguyraeuygfuyaergfuyoaegrhufyhgaeruygfyuaerghfuyhaeruygfyuaegfyuegrayuf" +
 		"fanbeuyrbfueyroabgsrbxekrighxmhuysehrmxyherysughyesurbguyershgiyhearigyuheuoryghfuyerahgfyuiahsdfiygheryaghfuioydshgfyrhyrhgyrh"
-	TOKENTIME = 7200
+	TOKENTIME   = 7200
 	REFRESHTIME = 86400 * 14
 )
 
@@ -50,7 +50,7 @@ func NewUserService(r repository.IUserRepo) IUserService {
 	return &userService{r: r}
 }
 
-func (s *userService) UpdateUserAvatar(user dto.UpdateUserAvatarRequest) error{
+func (s *userService) UpdateUserAvatar(user dto.UpdateUserAvatarRequest) error {
 	id, err := strconv.Atoi(user.Id)
 	if err != nil {
 		return newm_helper.Trace(err)
@@ -59,7 +59,7 @@ func (s *userService) UpdateUserAvatar(user dto.UpdateUserAvatarRequest) error{
 	return s.r.UpdateUserAvatar(id, user.Avatar)
 }
 
-func (s *userService) GetUserInfo(userId int) (dto.GetUserInfoResponse, error){
+func (s *userService) GetUserInfo(userId int) (dto.GetUserInfoResponse, error) {
 	info, err := s.r.GetUserInfo(userId)
 	if err != nil {
 		return dto.GetUserInfoResponse{}, err
@@ -68,7 +68,7 @@ func (s *userService) GetUserInfo(userId int) (dto.GetUserInfoResponse, error){
 	return entity.NewGetUserInfoResponse(info), nil
 }
 
-func (s *userService) UpdateUserInfo(info dto.CreatUserInfoRequest) error{
+func (s *userService) UpdateUserInfo(info dto.CreatUserInfoRequest) error {
 	return s.r.UpdateUserInfo(entity.NewCreateUserInfo(info))
 }
 
