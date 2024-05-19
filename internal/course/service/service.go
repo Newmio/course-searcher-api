@@ -47,10 +47,12 @@ type ICourseService interface {
 	UpdateCourse(course dto.PutUpdateCourseRequest) error
 	UpdateCourseByParam(course dto.PutUpdateCourseRequest) error
 	GetShortCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
-	GetCoursesByUser(id int)(map[string]dto.CourseListResponse, error)
-	CheckCourse(link string)(bool, error)
+	GetCoursesByUser(id int) (map[string]dto.CourseListResponse, error)
+	CheckCourse(link string) (bool, error)
 	GetCacheCoursesByUser(userId int) (dto.CourseListResponse, error)
 	CreateCourseEvent(value []byte) error
+	AppendEventOffset(offset int) error
+	CheckExistsEventOffset(offset int) (bool, error)
 }
 
 type courseService struct {
@@ -61,7 +63,15 @@ func NewCourseService(r repository.ICourseRepo) ICourseService {
 	return &courseService{r: r}
 }
 
-func (s *courseService) CreateCourseEvent(value []byte) error{
+func (s *courseService) CheckExistsEventOffset(offset int) (bool, error){
+	return s.r.CheckExistsEventOffset(offset)
+}
+
+func (s *courseService) AppendEventOffset(offset int) error {
+	return s.r.AppendEventOffset(offset)
+}
+
+func (s *courseService) CreateCourseEvent(value []byte) error {
 	return s.r.CreateCourseEvent(value)
 }
 
@@ -74,7 +84,7 @@ func (s *courseService) GetCacheCoursesByUser(userId int) (dto.CourseListRespons
 	return entity.NewCourseListResponse(cacheCourses), nil
 }
 
-func (s *courseService) CheckCourse(link string)(bool, error){
+func (s *courseService) CheckCourse(link string) (bool, error) {
 	course, err := s.r.GetCourseByLink(link)
 	if err != nil {
 		return false, newm_helper.Trace(err)
@@ -87,7 +97,7 @@ func (s *courseService) CheckCourse(link string)(bool, error){
 	return true, nil
 }
 
-func (s *courseService) GetCoursesByUser(id int)(map[string]dto.CourseListResponse, error) {
+func (s *courseService) GetCoursesByUser(id int) (map[string]dto.CourseListResponse, error) {
 	resp := make(map[string]dto.CourseListResponse)
 
 	courses, err := s.r.GetCoursesByUser(id)

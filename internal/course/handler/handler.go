@@ -1,18 +1,32 @@
 package handler
 
 import (
+	"net/http"
 	"searcher/internal/course/model/dto"
 	"searcher/internal/course/service"
 
+	"github.com/IBM/sarama"
 	"github.com/Newmio/newm_helper"
+	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 )
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+
+	ReadBufferSize:  8192, // 8 KB
+	WriteBufferSize: 8192, // 8 KB
+}
+
+var wsClients = make(map[string][]*websocket.Conn)
 
 type Handler struct {
 	s service.ICourseService
 }
 
-func NewHandler(s service.ICourseService) *Handler {
+func NewHandler(s service.ICourseService, client sarama.Client) *Handler {
 	return &Handler{s: s}
 }
 
@@ -35,15 +49,34 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 			course.PATCH("/update_by_param", h.UpdateCourseByParam)
 			course.GET("/check", h.CheckCourse)
 		}
+
+		course.GET("/event", h.GetCourseEvent)
 	}
-	e.GET("/test", h.T)
 }
 
-func (h *Handler) T(c echo.Context) error {
-	if err := h.s.CreateCourseEvent([]byte("test")); err != nil {
+func BroadcastCourseEvent(message []byte) {
+	for _, client := range wsClients["course_event"] {
+		if err := client.WriteMessage(websocket.TextMessage, message); err != nil {
+			return
+		}
+	}
+}
+
+func (h *Handler) GetCourseEvent(c echo.Context) error {
+	conn, err := upgrader.Upgrade(c.Response(), c.Request(), c.Request().Header)
+	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
-	return c.JSON(200, nil)
+	defer conn.Close()
+
+	wsClients["course_event"] = append(wsClients["course_event"], conn)
+
+	for {
+		_, _, err := conn.ReadMessage()
+		if err != nil {
+			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+		}
+	}
 }
 
 func (h *Handler) GetCoursesHistory(c echo.Context) error {

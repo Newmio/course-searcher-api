@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"searcher/internal/course/model/entity"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Newmio/newm_helper"
 	"github.com/go-redis/redis/v8"
@@ -17,6 +19,34 @@ type redisCourseRepo struct {
 
 func NewRedisCourseRepo(redis *redis.Client) IRedisCourseRepo {
 	return &redisCourseRepo{redis: redis}
+}
+
+func (r *redisCourseRepo) CheckExistsEventOffset(offset int) (bool, error) {
+	c, err := r.redis.LRange(context.Background(), fmt.Sprintf("event_offset_%d", time.Now().Day()), 0, -1).Result()
+	if err != nil {
+		return false, newm_helper.Trace(err)
+	}
+
+	for _, v := range c {
+		redisOffset, err := strconv.Atoi(v)
+		if err != nil {
+			return false, newm_helper.Trace(err)
+		}
+
+		if redisOffset == offset {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func (r *redisCourseRepo) AppendEventOffset(offset int) error {
+	if err := r.redis.RPush(context.Background(), fmt.Sprintf("event_offset_%d", time.Now().Day()), offset).Err(); err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return nil
 }
 
 func (r *redisCourseRepo) GetCoursesByUser(id int) ([]entity.CourseList, error) {

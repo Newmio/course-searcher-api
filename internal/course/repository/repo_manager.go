@@ -20,9 +20,11 @@ type ICourseRepo interface {
 	GetCoursesByUser(id int) (map[string][]entity.CourseList, error)
 	GetCourseByLink(link string) (entity.CourseList, error)
 	CreateCourseEvent(value []byte) error
+	AppendEventOffset(offset int) error
+	CheckExistsEventOffset(offset int) (bool, error)
 }
 
-type IKafkaCourseRepo interface{
+type IKafkaCourseRepo interface {
 	CreateCourseEvent(value []byte) error
 }
 
@@ -43,6 +45,8 @@ type IRedisCourseRepo interface {
 	CreateCacheCourses(courses []entity.CreateCourse, keyPrefix string) error
 	GetCacheCourses(searchValue string) ([]entity.CourseList, error)
 	GetCoursesByUser(id int) ([]entity.CourseList, error)
+	AppendEventOffset(offset int) error
+	CheckExistsEventOffset(offset int) (bool, error)
 }
 
 type IHttpCourseRepo interface {
@@ -58,18 +62,26 @@ type managerCourseRepo struct {
 
 func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client, kafka sarama.Client) ICourseRepo {
 	return &managerCourseRepo{
-		psql: NewPsqlCourseRepo(psql), 
-		redis: NewRedisCourseRepo(redis), 
-		http: NewHttpCourseRepo(),
+		psql:  NewPsqlCourseRepo(psql),
+		redis: NewRedisCourseRepo(redis),
+		http:  NewHttpCourseRepo(),
 		kafka: NewKafkaCourseRepo(kafka),
 	}
 }
 
-func (r *managerCourseRepo) CreateCourseEvent(value []byte) error{
+func (r *managerCourseRepo) CheckExistsEventOffset(offset int) (bool, error) {
+	return r.redis.CheckExistsEventOffset(offset)
+}
+
+func (r *managerCourseRepo) AppendEventOffset(offset int) error {
+	return r.redis.AppendEventOffset(offset)
+}
+
+func (r *managerCourseRepo) CreateCourseEvent(value []byte) error {
 	return r.kafka.CreateCourseEvent(value)
 }
 
-func (r *managerCourseRepo) GetCoursesByUser(id int) (map[string][]entity.CourseList, error){
+func (r *managerCourseRepo) GetCoursesByUser(id int) (map[string][]entity.CourseList, error) {
 	psqlCourses, err := r.psql.GetCoursesByUser(id)
 	if err != nil {
 		return nil, newm_helper.Trace(err)
@@ -83,7 +95,7 @@ func (r *managerCourseRepo) GetCoursesByUser(id int) (map[string][]entity.Course
 	return map[string][]entity.CourseList{"psql": psqlCourses, "redis": redisCourses}, nil
 }
 
-func (r *managerCourseRepo) GetCourseByLink(link string) (entity.CourseList, error){
+func (r *managerCourseRepo) GetCourseByLink(link string) (entity.CourseList, error) {
 	return r.psql.GetCourseByLink(link)
 }
 

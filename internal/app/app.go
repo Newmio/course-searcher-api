@@ -128,7 +128,7 @@ func (app *App) initService() {
 
 	managerCourseRepo := repoCourse.NewManagerCourseRepo(app.Psql, app.Redis, app.Kafka)
 	courseService := serviceCourse.NewCourseService(managerCourseRepo)
-	courseHandler := handlerCourse.NewHandler(courseService)
+	courseHandler := handlerCourse.NewHandler(courseService, app.Kafka)
 	courseHandler.InitCourseRoutes(app.Echo, middlewares)
 
 	managerFileRepo := repoFile.NewManagerFileRepo(app.Psql)
