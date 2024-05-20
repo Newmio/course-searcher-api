@@ -33,6 +33,10 @@ func NewKafkaHandler(client sarama.Client, s service.ICourseService) (*KafkaHand
 	}, nil
 }
 
+func (h *KafkaHandler) Run(){
+	go h.GetCourseEvent()
+}
+
 func (h *KafkaHandler) GetCourseEvent() {
 	topic := fmt.Sprintf("course_event_%d", time.Now().Day())
 

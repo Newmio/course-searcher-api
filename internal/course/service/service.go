@@ -63,6 +63,15 @@ func NewCourseService(r repository.ICourseRepo) ICourseService {
 	return &courseService{r: r}
 }
 
+// func (s *courseService) CreateAdminSubmitEvent(link string)error{
+// 	course, err := s.r.GetCourseByLink(link)
+// 	if err != nil{
+// 		return newm_helper.Trace(err)
+// 	}
+
+
+// }
+
 func (s *courseService) CheckExistsEventOffset(offset int) (bool, error){
 	return s.r.CheckExistsEventOffset(offset)
 }
