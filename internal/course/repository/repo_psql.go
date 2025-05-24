@@ -22,6 +22,20 @@ func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 	return r
 }
 
+func (r *psqlCourseRepo) CreateCourseUser(val map[string]interface{}) error {
+
+	str := `insert into course_user(id_user, id_course)
+	values($1, $2)
+	on conflict (id_user, id_course) do nothing`
+
+	_, err := r.psql.Exec(str, val["id_user"], val["id_course"])
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
 func (r *psqlCourseRepo) GetCourseByLink(link string) (entity.CourseList, error) {
 	var course entity.CourseList
 

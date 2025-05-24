@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма поиска</title>
+    <link rel="stylesheet" href="template/course/search/search.css">
+
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous">
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js"></script>
+</head>
+
+<body>
+
+    <div class="profile-container">
+        <img onclick='window.location.href = "/";' src="template/messages/search/icon-search.jpg" alt="Avatar">
+        <img onclick='window.location.href = "/profile";' src="template/messages/search/profile-icon.jpg" alt="Avatar">
+    </div>
+
+    <form hx-headers='{"Content-Type": "application/json", "Accept": "text/html"}' hx-ext="json-enc"
+        hx-target="#result">
+
+        <div class="search-form">
+
+            <div class="web-search">
+                <div class="web-search-icon">
+                    <img src="template/messages/search/web-search-icon.jpg" alt="web-search-icon">
+                </div>
+
+                <div class="web-search-btn">
+                    <button hx-get="/api/course/get/check" type="submit">Список курсов для подтверждения</button>
+                </div>
+            </div>
+
+            <div class="db-search">
+                <div class="db-search-icon">
+                    <img src="template/messages/search/db-search-icon.jpg" alt="db-search-icon">
+                </div>
+
+                <div class="db-search-btn">
+                    <button hx-post="/api/course/get/short" type="submit">Курсы для проверки</button>
+                </div>
+            </div>
+        </div>
+        <div id="result"></div>
+    </form>
+</body>
+
+</html>

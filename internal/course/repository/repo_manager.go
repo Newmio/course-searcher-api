@@ -3,7 +3,6 @@ package repository
 import (
 	"searcher/internal/course/model/entity"
 
-	"github.com/IBM/sarama"
 	"github.com/Newmio/newm_helper"
 	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
@@ -22,6 +21,14 @@ type ICourseRepo interface {
 	CreateCourseEvent(value []byte) error
 	AppendEventOffset(offset int) error
 	CheckExistsEventOffset(offset int) (bool, error)
+	GetCacheCourseByLink(link string) (entity.CourseList, error)
+	CreateCacheCheckCourses(course entity.CourseList) error
+	GetCacheCheckCourses() ([]entity.CourseList, error)
+	CreateWaitingCheck(id int, link string) error
+	DeleteCacheCheckCourses(link string) error
+	GetWaitingCheck(link string) ([]int, error)
+	CreateCourseUser(val map[string]interface{}) error
+	DeleteWaitingCheck(link string) error
 }
 
 type IKafkaCourseRepo interface {
@@ -35,6 +42,7 @@ type IPsqlCourseRepo interface {
 	UpdateCourseByParam(course entity.UpdateCourse) error
 	GetCoursesByUser(id int) ([]entity.CourseList, error)
 	GetCourseByLink(link string) (entity.CourseList, error)
+	CreateCourseUser(val map[string]interface{}) error
 }
 
 type IRedisCourseRepo interface {
@@ -47,6 +55,13 @@ type IRedisCourseRepo interface {
 	GetCoursesByUser(id int) ([]entity.CourseList, error)
 	AppendEventOffset(offset int) error
 	CheckExistsEventOffset(offset int) (bool, error)
+	GetCacheCourseByLink(link string) (entity.CourseList, error)
+	CreateCacheCheckCourses(course entity.CourseList) error
+	GetCacheCheckCourses() ([]entity.CourseList, error)
+	CreateWaitingCheck(id int, link string) error
+	DeleteCacheCheckCourses(link string) error
+	GetWaitingCheck(link string) ([]int, error)
+	DeleteWaitingCheck(link string) error
 }
 
 type IHttpCourseRepo interface {
@@ -60,13 +75,36 @@ type managerCourseRepo struct {
 	kafka IKafkaCourseRepo
 }
 
-func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client, kafka sarama.Client) ICourseRepo {
+func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 	return &managerCourseRepo{
 		psql:  NewPsqlCourseRepo(psql),
 		redis: NewRedisCourseRepo(redis),
 		http:  NewHttpCourseRepo(),
-		kafka: NewKafkaCourseRepo(kafka),
 	}
+}
+
+func (r *managerCourseRepo) DeleteWaitingCheck(link string) error{
+	return r.redis.DeleteWaitingCheck(link)
+}
+
+func (r *managerCourseRepo) CreateCourseUser(val map[string]interface{}) error {
+	return r.psql.CreateCourseUser(val)
+}
+
+func (r *managerCourseRepo) GetWaitingCheck(link string) ([]int, error) {
+	return r.redis.GetWaitingCheck(link)
+}
+
+func (r *managerCourseRepo) DeleteCacheCheckCourses(link string) error {
+	return r.redis.DeleteCacheCheckCourses(link)
+}
+
+func (r *managerCourseRepo) CreateWaitingCheck(id int, link string) error {
+	return r.redis.CreateWaitingCheck(id, link)
+}
+
+func (r *managerCourseRepo) GetCacheCheckCourses() ([]entity.CourseList, error) {
+	return r.redis.GetCacheCheckCourses()
 }
 
 func (r *managerCourseRepo) CheckExistsEventOffset(offset int) (bool, error) {
@@ -95,8 +133,16 @@ func (r *managerCourseRepo) GetCoursesByUser(id int) (map[string][]entity.Course
 	return map[string][]entity.CourseList{"psql": psqlCourses, "redis": redisCourses}, nil
 }
 
+func (r *managerCourseRepo) CreateCacheCheckCourses(course entity.CourseList) error {
+	return r.redis.CreateCacheCheckCourses(course)
+}
+
 func (r *managerCourseRepo) GetCourseByLink(link string) (entity.CourseList, error) {
 	return r.psql.GetCourseByLink(link)
+}
+
+func (r *managerCourseRepo) GetCacheCourseByLink(link string) (entity.CourseList, error) {
+	return r.redis.GetCacheCourseByLink(link)
 }
 
 func (r *managerCourseRepo) GetCacheCourses(searchValue string) ([]entity.CourseList, error) {

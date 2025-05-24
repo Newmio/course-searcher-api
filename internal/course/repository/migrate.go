@@ -31,8 +31,13 @@ func (r *psqlCourseRepo) initTables() error {
 		name text default '',
 		topic text default '',
 		date_start timestamp default now(),
-		date_end timestamp default now()
+		date_end timestamp default now(),
+		UNIQUE (id_user, id_course)
 	)`
+	_, err = r.psql.Exec(str)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
 
 	return nil
 }

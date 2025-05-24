@@ -5,7 +5,6 @@ import (
 	"searcher/internal/course/model/dto"
 	"searcher/internal/course/service"
 
-	"github.com/IBM/sarama"
 	"github.com/Newmio/newm_helper"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
@@ -26,7 +25,7 @@ type Handler struct {
 	s service.ICourseService
 }
 
-func NewHandler(s service.ICourseService, client sarama.Client) *Handler {
+func NewHandler(s service.ICourseService) *Handler {
 	return &Handler{s: s}
 }
 
@@ -42,9 +41,11 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 				get.POST("/short", h.GetShortCourses)
 				get.GET("/by_user", h.GetCoursesByUser)
 				get.GET("/history", h.GetCoursesHistory)
+				get.GET("/check", h.GetCacheCheckCourses)
 			}
 
 			course.POST("/create", h.CreateCourse)
+			course.GET("/approve", h.ApproveCourse)
 			course.PUT("/update", h.UpdateCourse)
 			course.PATCH("/update_by_param", h.UpdateCourseByParam)
 			course.GET("/check", h.CheckCourse)
@@ -85,13 +86,14 @@ func (h *Handler) GetCoursesHistory(c echo.Context) error {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	return courseResponse(c, courses)
+	return courseResponse(c, courses, false, false)
 }
 
 func (h *Handler) CheckCourse(c echo.Context) error {
+	userId := c.Get("userId").(int)
 	accept := c.Request().Header.Get("Accept")
 
-	flag, err := h.s.CheckCourse(c.QueryParam("link"))
+	flag, err := h.s.CheckCourse(userId, c.QueryParam("link"))
 	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
@@ -116,6 +118,20 @@ func (h *Handler) CheckCourse(c echo.Context) error {
 	}
 }
 
+func (h *Handler) ApproveCourse(c echo.Context) error {
+	if c.Get("role").(string) != "admin" {
+		return c.JSON(200, nil)
+	}
+
+	link := c.QueryParam("link")
+
+	if err := h.s.CreateApproveCourse(link); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, nil)
+}
+
 func (h *Handler) GetCoursesByUser(c echo.Context) error {
 	id := c.Get("userId").(int)
 
@@ -124,7 +140,7 @@ func (h *Handler) GetCoursesByUser(c echo.Context) error {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	return c.JSON(200, courses)
+	return courseResponse(c, courses["psql"], false, true)
 }
 
 func (h *Handler) GetShortCourses(c echo.Context) error {
@@ -143,7 +159,7 @@ func (h *Handler) GetShortCourses(c echo.Context) error {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	return courseResponse(c, courses)
+	return courseResponse(c, courses, false, false)
 }
 
 func (h *Handler) UpdateCourseByParam(c echo.Context) error {
@@ -209,19 +225,45 @@ func (h *Handler) GetLongCourses(c echo.Context) error {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	return courseResponse(c, courses)
+	return courseResponse(c, courses, false, false)
 }
 
-func courseResponse(c echo.Context, courses dto.CourseListResponse) error {
+func (h *Handler) GetCacheCheckCourses(c echo.Context) error {
+	courses, err := h.s.GetCacheCheckCourses()
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return courseResponse(c, courses, true, false)
+}
+
+func courseResponse(c echo.Context, courses dto.CourseListResponse, check, profile bool) error {
 	switch c.Request().Header.Get("Accept") {
 	case "application/xml":
 		return c.XML(200, courses)
 
 	case "text/html":
+		if check {
+			strHtml, err := newm_helper.RenderHtml("template/messages/course_template.html", courses)
+			if err != nil {
+				return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+			}
+			return c.HTML(200, strHtml)
+		}
+
+		if profile {
+			strHtml, err := newm_helper.RenderHtml("template/user/profile/course_template.html", courses)
+			if err != nil {
+				return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+			}
+			return c.HTML(200, strHtml)
+		}
+
 		strHtml, err := newm_helper.RenderHtml("template/course/course_template.html", courses)
 		if err != nil {
 			return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 		}
+
 		return c.HTML(200, strHtml)
 
 	default:

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"searcher/internal/app/storage/kafka"
 	"searcher/internal/app/storage/postgres"
 	"searcher/internal/app/storage/redis"
 	handlerCourse "searcher/internal/course/handler"
@@ -25,7 +24,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/IBM/sarama"
 	redisClient "github.com/go-redis/redis/v8"
 
 	"github.com/fatih/color"
@@ -38,7 +36,6 @@ import (
 type App struct {
 	Psql  *sqlx.DB
 	Redis *redisClient.Client
-	Kafka sarama.Client
 	Log   *zap.Logger
 	Echo  *echo.Echo
 }
@@ -55,11 +52,6 @@ func InitProject() *App {
 		panic(err)
 	}
 
-	kafka, err := kafka.OpenBroker()
-	if err != nil {
-		panic(err)
-	}
-
 	log, err := zap.NewProduction()
 	if err != nil {
 		panic(err)
@@ -68,7 +60,6 @@ func InitProject() *App {
 	return &App{
 		Psql:  dbPsql,
 		Redis: dbRedis,
-		Kafka: kafka,
 		Log:   log,
 		Echo:  echo.New(),
 	}
@@ -126,15 +117,10 @@ func (app *App) initService() {
 	userHandler := handlerUser.NewHandler(userService)
 	userHandler.InitUserRoutes(app.Echo, middlewares)
 
-	managerCourseRepo := repoCourse.NewManagerCourseRepo(app.Psql, app.Redis, app.Kafka)
+	managerCourseRepo := repoCourse.NewManagerCourseRepo(app.Psql, app.Redis)
 	courseService := serviceCourse.NewCourseService(managerCourseRepo)
-	courseHandler := handlerCourse.NewHandler(courseService, app.Kafka)
-	courseKafka, err := handlerCourse.NewKafkaHandler(app.Kafka, courseService)
-	if err != nil{
-		panic(err)
-	}
+	courseHandler := handlerCourse.NewHandler(courseService)
 	courseHandler.InitCourseRoutes(app.Echo, middlewares)
-	courseKafka.Run()
 
 	managerFileRepo := repoFile.NewManagerFileRepo(app.Psql)
 	FileService := serviceFile.NewFileService(managerFileRepo, managerUserRepo)

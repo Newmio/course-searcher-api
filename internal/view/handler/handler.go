@@ -22,6 +22,10 @@ func (h *Handler) InitViewRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 		return c.File("template/course/search/search.html")
 	}, middlewares["api"])
 
+	e.GET("/messages", func(c echo.Context) error {
+		return c.File("template/messages/search/search.html")
+	}, middlewares["api"])
+
 	e.GET("/login_form", func(c echo.Context) error {
 		return c.File("template/user/login/login.html")
 	})
@@ -32,15 +36,15 @@ func (h *Handler) InitViewRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 	e.GET("/chat_menu", h.GetChatUsers, middlewares["api"])
 }
 
-func (h *Handler) GetChatUsers(c echo.Context)error{
+func (h *Handler) GetChatUsers(c echo.Context) error {
 	var group string
 
-	if c.Get("role").(string) == "admin"{
+	if c.Get("role").(string) == "admin" {
 		group = c.QueryParam("group")
 	}
 
 	html, err := h.s.GetChatUsers(group, "template/user/chat/chat-menu.html", c.Get("userId").(int))
-	if err != nil{
+	if err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
@@ -69,6 +73,17 @@ func (h *Handler) Profile(c echo.Context) error {
 
 	return c.HTML(200, html)
 }
+
+// func (h *Handler) Messages(c echo.Context) error {
+// 	id := c.Get("userId").(int)
+
+// 	html, err := h.s.GetUserMessages(id, "template/user/messages/messages.html")
+// 	if err != nil {
+// 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+// 	}
+
+// 	return c.HTML(200, html)
+// }
 
 func (h *Handler) GetAllDefaultAvatarNames(c echo.Context) error {
 	html, err := h.s.GetAllDefaultAvatarNames(c.Get("userId").(int))

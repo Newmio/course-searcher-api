@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Go Server",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "TG_TOKEN": "8105537656:AAHg7gfxKedNVU42dpa6g5Bqr09WlkY_3Qs",
+                "MONGO_HOST": "mongodb://localhost:27017"
+            }
+        }
+    ]
+}

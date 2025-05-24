@@ -19,7 +19,7 @@ type CourseList struct {
 	DateUpdate  string `db:"date_update"`
 }
 
-func newCourseList(coruses []CourseList) []dto.CourseList {
+func NewCourseList(coruses []CourseList) []dto.CourseList {
 	var coursesResp []dto.CourseList
 
 	for _, value := range coruses {
@@ -42,7 +42,7 @@ func newCourseList(coruses []CourseList) []dto.CourseList {
 
 func NewCourseListResponse(courses []CourseList) dto.CourseListResponse {
 	return dto.CourseListResponse{
-		Courses: newCourseList(courses),
+		Courses: NewCourseList(courses),
 		Count:   len(courses),
 	}
 }

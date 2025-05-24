@@ -5,27 +5,35 @@ import (
 	"searcher/internal/app/storage"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/spf13/viper"
 )
 
 func OpenDb() (*sqlx.DB, error) {
-	v := viper.New()
-	v.AddConfigPath("internal/app/storage/postgres")
-	v.SetConfigName("config")
-	
-	err := v.ReadInConfig()
-	if err != nil {
-		return nil, err
-	}
+	// v := viper.New()
+	// v.AddConfigPath("internal/app/storage/postgres")
+	// v.SetConfigName("config")
+
+	// err := v.ReadInConfig()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return initDb(storage.Config{
-		Host:     v.GetString("host"),
-		Port:     v.GetString("port"),
-		User:     v.GetString("user"),
-		Password: v.GetString("password"),
-		DbName:   v.GetString("dbName"),
-		SslMode:  v.GetString("sslMode"),
+		Host:     "localhost",
+		Port:     "5432",
+		User:     "postgres",
+		Password: "qwerty",
+		DbName:   "postgres",
+		SslMode:  "disable",
 	})
+
+	// return initDb(storage.Config{
+	// 	Host:     v.GetString("host"),
+	// 	Port:     v.GetString("port"),
+	// 	User:     v.GetString("user"),
+	// 	Password: v.GetString("password"),
+	// 	DbName:   v.GetString("dbName"),
+	// 	SslMode:  v.GetString("sslMode"),
+	// })
 }
 
 func initDb(c storage.Config) (*sqlx.DB, error) {

@@ -25,21 +25,16 @@
 
         <div class="course-info">
             <h3>{{.Name}}</h3>
-            <p class="course-description">{{.Description}}</p>  
         </div>
 
         <div class="course-common">
             <div class="course-platform">Платформа: {{.Platform}}</div>
             <div class="author">Автор: {{.Author}}</div>
-            <div class="rating">Рейтинг: {{.Rating}}</div>
-            <div class="lang">Язык курса: {{.Language}}</div>
-            <div class="duration">Длительность: {{.Duration}}</div>
-            <div class="money">Цена: {{.Money}}</div>
             
             <h5 id="{{$strid}}"></h5>
             <div class="course-link">
                 <a style="color: white; background: #007bff; padding: 10px 15px; border-radius: 4px; text-decoration: none; display: inline-block;" href="{{.Link}}" class="btn-link">Страница курса</a> 
-                <button hx-get="/api/course/check?link={{.Link}}" hx-headers='{"Accept": "text/html"}' hx-target="#{{$strid}}">Запрос на прохождение курса</button>
+                <button hx-get="/api/course/check?link={{.Link}}" hx-headers='{"Accept": "text/html"}' hx-target="#{{$strid}}">Сдать курс</button>
             </div>
         </div>
     </div>

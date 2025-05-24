@@ -26,16 +26,16 @@ const (
 var WebCourseParams = map[string]WebCourseParam{
 	"CourseHunter": {
 		Url:       fmt.Sprintf("https://coursehunter.net/search?q=%s&order_by=votes_pos&order=desc&searching=true&page=%s", SEARCH_VALUE, PAGE),
-		MainField: "article.course",
+		MainField: "article.post-card",
 		Fields: map[string]string{
-			"name":        "h3.course-primary-name",
-			"description": "div.course-description",
-			"language":    "div.course-lang",
-			"author":      "div.course-lessons a",
-			"duration":    "div.course-duration",
-			"rating":      "div.course-rating-on<>data-text",
-			"money":       "div.course-status",
-			"link":        "div.course-details-bottom a<>href",
+			"name":        "h3.post-title",
+			"description": "p.post-description",
+			"language":    "div.post-footer.post-tags.post-date",
+			"author":      "a.post-avatar-box span",
+			"duration":    "div.post-duration",
+			"rating":      "div.post-rating.post-rating-plus",
+			"money":       "div.post-status",
+			"link":        "picture img <>src",
 			"icon-link":   "picture img <>src",
 		},
 	},
@@ -48,11 +48,13 @@ type ICourseService interface {
 	UpdateCourseByParam(course dto.PutUpdateCourseRequest) error
 	GetShortCourses(searchValue dto.GetCourseRequest) (dto.CourseListResponse, error)
 	GetCoursesByUser(id int) (map[string]dto.CourseListResponse, error)
-	CheckCourse(link string) (bool, error)
+	CheckCourse(userId int, link string) (bool, error)
 	GetCacheCoursesByUser(userId int) (dto.CourseListResponse, error)
 	CreateCourseEvent(value []byte) error
 	AppendEventOffset(offset int) error
 	CheckExistsEventOffset(offset int) (bool, error)
+	GetCacheCheckCourses() (dto.CourseListResponse, error)
+	CreateApproveCourse(link string) error
 }
 
 type courseService struct {
@@ -69,10 +71,62 @@ func NewCourseService(r repository.ICourseRepo) ICourseService {
 // 		return newm_helper.Trace(err)
 // 	}
 
-
 // }
 
-func (s *courseService) CheckExistsEventOffset(offset int) (bool, error){
+func (s *courseService) CreateApproveCourse(link string) error {
+	course, err := s.r.GetCacheCourseByLink(link)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	createCourses := make([]entity.CourseList, 0)
+	createCourses = append(createCourses, course)
+
+	err = s.r.CreateCourse(entity.NewCreateCourses(entity.NewCourseList(createCourses))[0])
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	err = s.r.DeleteCacheCheckCourses(link)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	userIds, err := s.r.GetWaitingCheck(link)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	course, err = s.r.GetCourseByLink(link)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	for _, v := range userIds{
+		err = s.r.CreateCourseUser(map[string]interface{}{"id_user": v, "id_course": course.Id})
+		if err != nil {
+			return newm_helper.Trace(err)
+		}
+		
+		err = s.r.DeleteWaitingCheck(link)
+		if err != nil {
+			return newm_helper.Trace(err)
+		}
+	}
+
+	return nil
+}
+
+func (s *courseService) GetCacheCheckCourses() (dto.CourseListResponse, error) {
+	courses, err := s.r.GetCacheCheckCourses()
+	if err != nil {
+		return dto.CourseListResponse{}, newm_helper.Trace(err)
+	}
+
+	return entity.NewCourseListResponse(courses), nil
+}
+
+func (s *courseService) CheckExistsEventOffset(offset int) (bool, error) {
 	return s.r.CheckExistsEventOffset(offset)
 }
 
@@ -93,13 +147,26 @@ func (s *courseService) GetCacheCoursesByUser(userId int) (dto.CourseListRespons
 	return entity.NewCourseListResponse(cacheCourses), nil
 }
 
-func (s *courseService) CheckCourse(link string) (bool, error) {
+func (s *courseService) CheckCourse(userId int, link string) (bool, error) {
 	course, err := s.r.GetCourseByLink(link)
 	if err != nil {
 		return false, newm_helper.Trace(err)
 	}
 
-	if course.Id == 0 {
+	if course.Link == "" {
+		course, err := s.r.GetCacheCourseByLink(link)
+		if err != nil {
+			return false, newm_helper.Trace(err)
+		}
+
+		if err := s.r.CreateCacheCheckCourses(course); err != nil {
+			return false, newm_helper.Trace(err)
+		}
+
+		if err := s.r.CreateWaitingCheck(userId, course.Link); err != nil {
+			return false, newm_helper.Trace(err)
+		}
+
 		return false, nil
 	}
 
