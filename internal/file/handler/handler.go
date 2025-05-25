@@ -8,6 +8,7 @@ import (
 	"searcher/internal/file/model/dto"
 	"searcher/internal/file/service"
 	"strconv"
+	"strings"
 
 	"github.com/Newmio/newm_helper"
 	"github.com/labstack/echo/v4"
@@ -218,7 +219,7 @@ func (h *Handler) UploadReportFile(c echo.Context) error {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	if err := h.s.CreateReportFile(file); err != nil {
+	if err := h.s.CreateReportFile(file, c.QueryParam("courseLink")); err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 
@@ -229,11 +230,31 @@ func (h *Handler) UploadEducationFile(c echo.Context) error {
 	var file dto.CreateFileRequest
 
 	file.UserId = c.Get("userId").(int)
-	file.FileType = c.QueryParam("file_type")
+	// file.FileType = c.QueryParam("file_type")
 
-	body, err := io.ReadAll(c.Request().Body)
+	// body, err := io.ReadAll(c.Request().Body)
+	// if err != nil {
+	// 	return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	// }
+	// file.FileBytes = body
+
+	file.FileType = strings.Split(c.FormValue("file_type"), "/")[1] // <- вот так
+
+	// Получаем файл из multipart
+	f, err := c.FormFile("file")
 	if err != nil {
-		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+		return c.JSON(400, newm_helper.ErrorResponse("file not provided"))
+	}
+
+	src, err := f.Open()
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+	defer src.Close()
+
+	body, err := io.ReadAll(src)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 	file.FileBytes = body
 
@@ -241,7 +262,7 @@ func (h *Handler) UploadEducationFile(c echo.Context) error {
 		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
 
-	if err := h.s.CreateEducationFile(file); err != nil {
+	if err := h.s.CreateEducationFile(file, c.QueryParam("courseLink")); err != nil {
 		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
 	}
 

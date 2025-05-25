@@ -19,9 +19,9 @@
     {{$strid := idForStr .Link}}
     <div class="course">
 
-        <div class="course-img">
+        <!-- <div class="course-img">
             <img src="{{.IconLink}}" alt="course_image">
-        </div>
+        </div> -->
 
         <div class="course-info">
             <h3>{{.Name}}</h3>
@@ -34,11 +34,33 @@
             <h5 id="{{$strid}}"></h5>
             <div class="course-link">
                 <a style="color: white; background: #007bff; padding: 10px 15px; border-radius: 4px; text-decoration: none; display: inline-block;" href="{{.Link}}" class="btn-link">Страница курса</a> 
-                <button hx-get="/api/course/check?link={{.Link}}" hx-headers='{"Accept": "text/html"}' hx-target="#{{$strid}}">Сдать курс</button>
+                <!-- <button hx-get="/api/course/check?link={{.Link}}" hx-headers='{"Accept": "text/html"}' hx-target="#{{$strid}}">Сдать курс</button> -->
+                <div class="file-upload">
+                    <form hx-post="/api/file/upload/education?courseLink={{.Link}}" hx-encoding="multipart/form-data" hx-target="#response">
+                        <input type="file" id="courseFile" name="file"></input>
+                        <input type="hidden" name="file_type" id="fileType" />
+                        <label for="courseFile">Загрузить</label>
+                    </form>
+                </div>
             </div>
+
+            <div id="response"></div>
         </div>
     </div>
     {{end}}
+
+<script>
+document.getElementById('courseFile').addEventListener('change', function () {
+    if (this.files.length > 0) {
+        // Записываем тип файла в скрытое поле
+        document.getElementById('fileType').value = this.files[0].type || '';
+        // Отправляем форму
+        htmx.trigger(this.form, "submit");
+    }
+});
+</script>
+
+
 </body>
 
 </html>

@@ -147,9 +147,9 @@ func (r *psqlFileRepo) CreateReportFile(file entity.CreateFile) error {
 
 	fmt.Println(file.UserId)
 
-	str = `insert into report_file_user(id_report_file, id_user) values($1, $2)`
+	str = `insert into report_file_user(id_report_file, id_user, id_course) values($1, $2, $3)`
 
-	_, err = r.db.Exec(str, reportId, file.UserId)
+	_, err = r.db.Exec(str, reportId, file.UserId, file.CourseId)
 	if err != nil {
 		return newm_helper.Trace(err, str)
 	}
@@ -167,9 +167,9 @@ func (r *psqlFileRepo) CreateEducationFile(file entity.CreateFile) error {
 		return newm_helper.Trace(err, str)
 	}
 
-	str = `insert into education_file_user(id_education_file, id_user) values($1, $2)`
+	str = `insert into education_file_user(id_education_file, id_user, id_course) values($1, $2, $3)`
 
-	_, err = r.db.Exec(str, educationId, file.UserId)
+	_, err = r.db.Exec(str, educationId, file.UserId, file.CourseId)
 	if err != nil {
 		return newm_helper.Trace(err, str)
 	}

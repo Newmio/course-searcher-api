@@ -32,7 +32,8 @@ func (r *psqlFileRepo) initTables() error {
 	str = `create table if not exists report_file_user(
 		id serial primary key,
 		id_report_file int references report_files(id) on delete cascade,
-		id_user int references users(id) on delete cascade
+		id_user int references users(id) on delete cascade,
+		id_course int references courses(id) on delete cascade
 	)`
 
 	_, err = r.db.Exec(str)
@@ -43,7 +44,8 @@ func (r *psqlFileRepo) initTables() error {
 	str = `create table if not exists education_file_user(
 		id serial primary key,
 		id_education_file int references education_files(id) on delete cascade,
-		id_user int references users(id) on delete cascade
+		id_user int references users(id) on delete cascade,
+		id_course int references courses(id) on delete cascade
 	)`
 
 	_, err = r.db.Exec(str)

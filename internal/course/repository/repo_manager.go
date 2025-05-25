@@ -29,6 +29,9 @@ type ICourseRepo interface {
 	GetWaitingCheck(link string) ([]int, error)
 	CreateCourseUser(val map[string]interface{}) error
 	DeleteWaitingCheck(link string) error
+	GetWaitingCheckById(userId int) ([]string, error)
+	SetCheckCourseUser(courseId, userId int) error
+	GetCoursesForReport() (map[string]interface{}, error)
 }
 
 type IKafkaCourseRepo interface {
@@ -43,6 +46,8 @@ type IPsqlCourseRepo interface {
 	GetCoursesByUser(id int) ([]entity.CourseList, error)
 	GetCourseByLink(link string) (entity.CourseList, error)
 	CreateCourseUser(val map[string]interface{}) error
+	SetCheckCourseUser(courseId, userId int) error
+	GetCoursesForReport() (map[string]interface{}, error)
 }
 
 type IRedisCourseRepo interface {
@@ -62,6 +67,7 @@ type IRedisCourseRepo interface {
 	DeleteCacheCheckCourses(link string) error
 	GetWaitingCheck(link string) ([]int, error)
 	DeleteWaitingCheck(link string) error
+	GetWaitingCheckById(userId int) ([]string, error)
 }
 
 type IHttpCourseRepo interface {
@@ -83,7 +89,19 @@ func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 	}
 }
 
-func (r *managerCourseRepo) DeleteWaitingCheck(link string) error{
+func (r *managerCourseRepo) GetCoursesForReport() (map[string]interface{}, error) {
+	return r.psql.GetCoursesForReport()
+}
+
+func (r *managerCourseRepo) SetCheckCourseUser(courseId, userId int) error {
+	return r.psql.SetCheckCourseUser(courseId, userId)
+}
+
+func (r *managerCourseRepo) GetWaitingCheckById(userId int) ([]string, error) {
+	return r.redis.GetWaitingCheckById(userId)
+}
+
+func (r *managerCourseRepo) DeleteWaitingCheck(link string) error {
 	return r.redis.DeleteWaitingCheck(link)
 }
 

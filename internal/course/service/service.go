@@ -55,6 +55,11 @@ type ICourseService interface {
 	CheckExistsEventOffset(offset int) (bool, error)
 	GetCacheCheckCourses() (dto.CourseListResponse, error)
 	CreateApproveCourse(link string) error
+	GetWaitingCheckById(userId int) (dto.CourseListResponse, error)
+	GetCoursesForReport()(map[string]interface{}, error)
+	// это худший проект в моей жизни 
+	// написанный на коленке без соблюдения любых архитектурных принципов
+	// в этом коде нету логики
 }
 
 type courseService struct {
@@ -72,6 +77,37 @@ func NewCourseService(r repository.ICourseRepo) ICourseService {
 // 	}
 
 // }
+
+func (s *courseService) GetCoursesForReport()(map[string]interface{}, error){
+	resp, err := s.r.GetCoursesForReport()
+	if err != nil{
+		return nil, newm_helper.Trace(err)
+	}
+
+	fmt.Println(resp)
+
+	return resp, nil
+}
+
+func (s *courseService) GetWaitingCheckById(userId int) (dto.CourseListResponse, error) {
+	links, err := s.r.GetWaitingCheckById(userId)
+	if err != nil {
+		return dto.CourseListResponse{}, newm_helper.Trace(err)
+	}
+
+	var courses []entity.CourseList
+
+	for _, v := range links {
+		course, err := s.r.GetCacheCourseByLink(v)
+		if err != nil {
+			return dto.CourseListResponse{}, newm_helper.Trace(err)
+		}
+
+		courses = append(courses, course)
+	}
+
+	return entity.NewCourseListResponse(courses), nil
+}
 
 func (s *courseService) CreateApproveCourse(link string) error {
 	course, err := s.r.GetCacheCourseByLink(link)
@@ -102,12 +138,12 @@ func (s *courseService) CreateApproveCourse(link string) error {
 		return newm_helper.Trace(err)
 	}
 
-	for _, v := range userIds{
+	for _, v := range userIds {
 		err = s.r.CreateCourseUser(map[string]interface{}{"id_user": v, "id_course": course.Id})
 		if err != nil {
 			return newm_helper.Trace(err)
 		}
-		
+
 		err = s.r.DeleteWaitingCheck(link)
 		if err != nil {
 			return newm_helper.Trace(err)

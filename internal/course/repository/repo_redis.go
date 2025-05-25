@@ -46,6 +46,31 @@ func (r *redisCourseRepo) DeleteWaitingCheck(link string) error {
 	return nil
 }
 
+func (r *redisCourseRepo) GetWaitingCheckById(userId int) ([]string, error) {
+	ctx := context.Background()
+
+	values, err := r.redis.LRange(ctx, "waiting_check", 0, -1).Result()
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	var links []string
+
+	for _, v := range values {
+		var m map[string]interface{}
+
+		if err := json.Unmarshal([]byte(v), &m); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		if int(m["id"].(float64)) == userId {
+			links = append(links, m["link"].(string))
+		}
+	}
+
+	return links, nil
+}
+
 func (r *redisCourseRepo) GetWaitingCheck(link string) ([]int, error) {
 	ctx := context.Background()
 
@@ -131,8 +156,10 @@ func (r *redisCourseRepo) CreateCacheCheckCourses(course entity.CourseList) erro
 	}
 
 	if c, err := r.GetCacheCheckCourses(); err == nil {
-		if len(c) > 0 {
-			return nil
+		for _, v := range c {
+			if v.Link == course.Link {
+				return nil
+			}
 		}
 	}
 

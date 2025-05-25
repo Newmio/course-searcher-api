@@ -22,6 +22,44 @@ func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 	return r
 }
 
+func (r *psqlCourseRepo) GetCoursesForReport() (map[string]interface{}, error) {
+	rows, err := r.psql.Queryx(`select * from course_user where topic = 'check'`)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+	defer rows.Close()
+
+	resp := make(map[string]interface{})
+
+	for rows.Next() {
+		row := make(map[string]interface{})
+
+		if err := rows.MapScan(row); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		course, err := r.GetCourseById(int(row["id_course"].(int64)))
+		if err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		resp[fmt.Sprintf("user_%d", int(row["id_user"].(int64)))] = course
+	}
+
+	return resp, nil
+}
+
+func (r *psqlCourseRepo) SetCheckCourseUser(courseId, userId int) error {
+	str := `update course_user set topic = 'check', date_end = now() where id_user = $1 and id_course = $2`
+
+	_, err := r.psql.Exec(str, userId, courseId)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
 func (r *psqlCourseRepo) CreateCourseUser(val map[string]interface{}) error {
 
 	str := `insert into course_user(id_user, id_course)
@@ -34,6 +72,21 @@ func (r *psqlCourseRepo) CreateCourseUser(val map[string]interface{}) error {
 	}
 
 	return nil
+}
+
+func (r *psqlCourseRepo) GetCourseById(id int) (entity.CourseList, error) {
+	var course entity.CourseList
+
+	str := `select * from courses where id = $1`
+
+	if err := r.psql.Get(&course, str, id); err != nil {
+		if err != sql.ErrNoRows {
+			return course, newm_helper.Trace(err, str)
+		}
+		return entity.CourseList{}, nil
+	}
+
+	return course, nil
 }
 
 func (r *psqlCourseRepo) GetCourseByLink(link string) (entity.CourseList, error) {

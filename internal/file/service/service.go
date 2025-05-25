@@ -2,16 +2,18 @@ package service
 
 import (
 	"os"
+	rCourse "searcher/internal/course/repository"
 	"searcher/internal/file/model/dto"
 	rFile "searcher/internal/file/repository"
 	rUser "searcher/internal/user/repository"
 
+	"github.com/Newmio/newm_helper"
 	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 )
 
 type IFileService interface {
-	CreateReportFile(file dto.CreateFileRequest) error
-	CreateEducationFile(file dto.CreateFileRequest) error
+	CreateReportFile(file dto.CreateFileRequest, link string) error
+	CreateEducationFile(file dto.CreateFileRequest, link string) error
 	GetReportFilesInfoByUserId(userId int) (dto.GetFileResponse, error)
 	GetEducationFilesInfoByUserId(userId int) (dto.GetFileResponse, error)
 	GetReportFileById(fileId int) ([]byte, error)
@@ -23,12 +25,13 @@ type IFileService interface {
 }
 
 type fileService struct {
-	rFile rFile.IFileRepo
-	rUser rUser.IUserRepo
+	rFile   rFile.IFileRepo
+	rUser   rUser.IUserRepo
+	rCourse rCourse.ICourseRepo
 }
 
-func NewFileService(rFile rFile.IFileRepo, rUser rUser.IUserRepo) IFileService {
-	return &fileService{rFile: rFile, rUser: rUser}
+func NewFileService(rFile rFile.IFileRepo, rUser rUser.IUserRepo, rCourse rCourse.ICourseRepo) IFileService {
+	return &fileService{rFile: rFile, rUser: rUser, rCourse: rCourse}
 }
 
 func (s *fileService) TestPdf() error {
@@ -83,7 +86,7 @@ func (s *fileService) GetReportFileById(fileId int) ([]byte, error) {
 func (s *fileService) GetEducationFilesInfoByUserId(userId int) (dto.GetFileResponse, error) {
 	files, err := s.rFile.GetEducationFilesInfoByUserId(userId)
 	if err != nil {
-		return dto.GetFileResponse{}, err
+		return dto.GetFileResponse{}, newm_helper.Trace(err)
 	}
 
 	return dto.NewGetFilesResponse(files), nil
@@ -92,16 +95,36 @@ func (s *fileService) GetEducationFilesInfoByUserId(userId int) (dto.GetFileResp
 func (s *fileService) GetReportFilesInfoByUserId(userId int) (dto.GetFileResponse, error) {
 	files, err := s.rFile.GetReportFilesInfoByUserId(userId)
 	if err != nil {
-		return dto.GetFileResponse{}, err
+		return dto.GetFileResponse{}, newm_helper.Trace(err)
 	}
 
 	return dto.NewGetFilesResponse(files), nil
 }
 
-func (s *fileService) CreateReportFile(file dto.CreateFileRequest) error {
-	return s.rFile.CreateReportFile(file.FileBytes, file.FileType, file.UserId)
+func (s *fileService) CreateReportFile(file dto.CreateFileRequest, link string) error {
+	course, err := s.rCourse.GetCourseByLink(link)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return s.rFile.CreateReportFile(file.FileBytes, file.FileType, file.UserId, course.Id)
 }
 
-func (s *fileService) CreateEducationFile(file dto.CreateFileRequest) error {
-	return s.rFile.CreateEducationFile(file.FileBytes, file.FileType, file.UserId)
+func (s *fileService) CreateEducationFile(file dto.CreateFileRequest, link string) error {
+	course, err := s.rCourse.GetCourseByLink(link)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	err = s.rFile.CreateEducationFile(file.FileBytes, file.FileType, file.UserId, course.Id)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	err = s.rCourse.SetCheckCourseUser(course.Id, file.UserId)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return nil
 }

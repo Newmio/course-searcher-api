@@ -123,7 +123,7 @@ func (app *App) initService() {
 	courseHandler.InitCourseRoutes(app.Echo, middlewares)
 
 	managerFileRepo := repoFile.NewManagerFileRepo(app.Psql)
-	FileService := serviceFile.NewFileService(managerFileRepo, managerUserRepo)
+	FileService := serviceFile.NewFileService(managerFileRepo, managerUserRepo, managerCourseRepo)
 	FileHandler := handlerFile.NewHandler(FileService)
 	FileHandler.InitFileRoutes(app.Echo, middlewares)
 

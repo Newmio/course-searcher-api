@@ -99,9 +99,75 @@ body {
     min-width: 120px;
 }
 
+.course-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px; /* расстояние между кнопками */
+}
+
 .tabs button:hover {
     background-color: #0056b3;
 }
+
+.file-upload label {
+    padding: 10px 17px;
+    margin-bottom: 1px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    background-color: #444;
+    color: #fff;
+    display: inline-block;
+}
+
+.file-upload label:hover {
+    background-color: #0056b3;
+}
+
+.file-upload input {
+    display: none;
+}
+
+.file-upload {
+    margin-left: auto;
+    width: fit-content;
+}
+
+.file-upload button {
+    padding: 5px 10px;
+    margin-bottom: 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    background-color: #444;
+    color: #fff;
+}
+
+.file-upload button:hover {
+    background-color: #0056b3;
+}
+
+.file-upload input {
+    display: none;
+}
+
+/* .file-upload{
+   margin: auto;
+   width: 0%;
+}
+
+.file-upload button{
+    padding: 1px;
+    margin-bottom: 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.file-upload input{
+    display: none;
+} */
 
 .avatar-upload{
    margin: auto;
@@ -179,3 +245,7 @@ body {
     background-color: #f0f0f0;
     cursor: pointer;
 }
+
+
+
+/* kmdlskamdl */

@@ -42,6 +42,8 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 				get.GET("/by_user", h.GetCoursesByUser)
 				get.GET("/history", h.GetCoursesHistory)
 				get.GET("/check", h.GetCacheCheckCourses)
+				get.GET("/waiting", h.GetWaiting)
+				get.GET("/foreport", h.GetCoursesForReport)
 			}
 
 			course.POST("/create", h.CreateCourse)
@@ -61,6 +63,26 @@ func BroadcastCourseEvent(message []byte) {
 			return
 		}
 	}
+}
+
+func (h *Handler) GetCoursesForReport(c echo.Context) error {
+	_, err := h.s.GetCoursesForReport()
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, nil)
+}
+
+func (h *Handler) GetWaiting(c echo.Context) error {
+	userId := c.Get("userId").(int)
+
+	courses, err := h.s.GetWaitingCheckById(userId)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return courseResponse(c, courses, false, false)
 }
 
 func (h *Handler) GetCourseEvent(c echo.Context) error {

@@ -23,7 +23,11 @@ func (h *Handler) InitViewRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 	}, middlewares["api"])
 
 	e.GET("/messages", func(c echo.Context) error {
-		return c.File("template/messages/search/search.html")
+		if c.Get("role").(string) == "admin" {
+			return c.File("template/messages/search/searchadmin.html")
+		}
+
+		return c.File("template/messages/search/searchuser.html")
 	}, middlewares["api"])
 
 	e.GET("/login_form", func(c echo.Context) error {
