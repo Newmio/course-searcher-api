@@ -15,7 +15,7 @@ type psqlFileRepo struct {
 
 func NewPsqlFileRepo(db *sqlx.DB) IPsqlFileRepo {
 	r := &psqlFileRepo{db: db}
-	if err := r.initTables(); err != nil{
+	if err := r.initTables(); err != nil {
 		panic(err)
 	}
 	return r
@@ -71,6 +71,37 @@ func (r *psqlFileRepo) GetReportFileById(id int) (entity.GetFile, error) {
 	}
 
 	return file, nil
+}
+
+func (r *psqlFileRepo) GetEducationFilesByCourseId(courseId, userId int) ([]entity.GetFile, error) {
+	var fileUser []entity.GetEducationFileUser
+	var files []entity.GetFile
+
+	str := "select * from education_file_user where id_user = $1 and id_course = $2"
+
+	if err := r.db.Select(&fileUser, str, userId, courseId); err != nil {
+		return nil, newm_helper.Trace(err, str)
+	}
+
+	str = "select * from education_files where id = $1"
+
+	stmt, err := r.db.Preparex(str)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+	defer stmt.Close()
+
+	var file entity.GetFile
+
+	for _, v := range fileUser {
+		if err := stmt.Get(&file, v.IdEducationFile); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		files = append(files, file)
+	}
+
+	return files, nil
 }
 
 func (r *psqlFileRepo) GetEducationFilesByUserId(userId int) ([]entity.GetFile, error) {

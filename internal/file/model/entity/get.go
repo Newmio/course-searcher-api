@@ -8,14 +8,16 @@ type GetFile struct {
 	DateCreate string `db:"date_create"`
 }
 
-type GetReportFileUser struct{
-	Id int
+type GetReportFileUser struct {
+	Id           int
 	IdReportFile int `db:"id_report_file"`
-	IdUser int `db:"id_user"`
+	IdUser       int `db:"id_user"`
+	IdCourse     int `db:"id_course"`
 }
 
-type GetEducationFileUser struct{
-	Id int
+type GetEducationFileUser struct {
+	Id              int
 	IdEducationFile int `db:"id_education_file"`
-	IdUser int `db:"id_user"`
+	IdUser          int `db:"id_user"`
+	IdCourse        int `db:"id_course"`
 }

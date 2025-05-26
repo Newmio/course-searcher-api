@@ -56,7 +56,6 @@ type ICourseService interface {
 	GetCacheCheckCourses() (dto.CourseListResponse, error)
 	CreateApproveCourse(link string) error
 	GetWaitingCheckById(userId int) (dto.CourseListResponse, error)
-	GetCoursesForReport()(map[string]interface{}, error)
 	// это худший проект в моей жизни 
 	// написанный на коленке без соблюдения любых архитектурных принципов
 	// в этом коде нету логики
@@ -77,17 +76,6 @@ func NewCourseService(r repository.ICourseRepo) ICourseService {
 // 	}
 
 // }
-
-func (s *courseService) GetCoursesForReport()(map[string]interface{}, error){
-	resp, err := s.r.GetCoursesForReport()
-	if err != nil{
-		return nil, newm_helper.Trace(err)
-	}
-
-	fmt.Println(resp)
-
-	return resp, nil
-}
 
 func (s *courseService) GetWaitingCheckById(userId int) (dto.CourseListResponse, error) {
 	links, err := s.r.GetWaitingCheckById(userId)

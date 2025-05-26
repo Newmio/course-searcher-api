@@ -88,6 +88,7 @@ func (app *App) Run() {
 
 func (app *App) initService() {
 	app.Echo.Static("/template", "template")
+	app.Echo.Static("/media", "media")
 
 	app.Echo.Use(middleware.Recover())
 	app.Echo.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{

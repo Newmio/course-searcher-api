@@ -25,6 +25,14 @@ func NewHandler(s service.IFileService) *Handler {
 func (h *Handler) InitFileRoutes(e *echo.Echo, middlewares map[string]echo.MiddlewareFunc) {
 	api := e.Group("/api", middlewares["api"])
 	{
+		course := api.Group("/course")
+		{
+			get := course.Group("/get")
+			{
+				get.GET("/foreport", h.GetCoursesForReport)
+			}
+		}
+
 		file := api.Group("/file")
 		{
 			upload := file.Group("/upload")
@@ -58,6 +66,28 @@ func (h *Handler) InitFileRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 
 	// e.GET("/test", h.Test)
 	// e.GET("/test2", h.Test2)
+}
+
+type CoursesForReport struct{
+	Courses []service.CourseForReport
+}
+
+func (h *Handler) GetCoursesForReport(c echo.Context) error {
+	resp, err := h.s.GetCoursesForReport()
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	courses := CoursesForReport{
+		Courses: resp,
+	}
+
+	strHtml, err := newm_helper.RenderHtml("template/messages/course_reporttemplate.html", courses)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.HTML(200, strHtml)
 }
 
 func (h *Handler) Test2(c echo.Context) error {

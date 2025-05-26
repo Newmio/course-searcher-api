@@ -22,14 +22,14 @@ func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 	return r
 }
 
-func (r *psqlCourseRepo) GetCoursesForReport() (map[string]interface{}, error) {
+func (r *psqlCourseRepo) GetCoursesForReport() (map[int][]entity.CourseList, error) {
 	rows, err := r.psql.Queryx(`select * from course_user where topic = 'check'`)
 	if err != nil {
 		return nil, newm_helper.Trace(err)
 	}
 	defer rows.Close()
 
-	resp := make(map[string]interface{})
+	resp := make(map[int][]entity.CourseList)
 
 	for rows.Next() {
 		row := make(map[string]interface{})
@@ -43,7 +43,9 @@ func (r *psqlCourseRepo) GetCoursesForReport() (map[string]interface{}, error) {
 			return nil, newm_helper.Trace(err)
 		}
 
-		resp[fmt.Sprintf("user_%d", int(row["id_user"].(int64)))] = course
+		key := int(row["id_user"].(int64))
+
+		resp[key] = append(resp[key], course)
 	}
 
 	return resp, nil

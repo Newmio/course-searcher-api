@@ -43,7 +43,6 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 				get.GET("/history", h.GetCoursesHistory)
 				get.GET("/check", h.GetCacheCheckCourses)
 				get.GET("/waiting", h.GetWaiting)
-				get.GET("/foreport", h.GetCoursesForReport)
 			}
 
 			course.POST("/create", h.CreateCourse)
@@ -63,15 +62,6 @@ func BroadcastCourseEvent(message []byte) {
 			return
 		}
 	}
-}
-
-func (h *Handler) GetCoursesForReport(c echo.Context) error {
-	_, err := h.s.GetCoursesForReport()
-	if err != nil {
-		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
-	}
-
-	return c.JSON(200, nil)
 }
 
 func (h *Handler) GetWaiting(c echo.Context) error {

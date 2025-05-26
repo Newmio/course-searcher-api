@@ -17,6 +17,7 @@ type IFileRepo interface {
 	GetEducationFileById(fileId int) ([]byte, error)
 	DeleteReportFile(fileId int) error
 	DeleteEducationFile(fileId int) error
+	GetEducationFilesByCourseId(courseId, userId int) ([]entity.GetFile, error)
 }
 
 type IDiskFileRepo interface {
@@ -34,6 +35,7 @@ type IPsqlFileRepo interface {
 	GetEducationFileById(id int) (entity.GetFile, error)
 	DeleteReportFile(id int) (string, error)
 	DeleteEducationFile(id int) (string, error)
+	GetEducationFilesByCourseId(courseId, userId int) ([]entity.GetFile, error)
 }
 
 type managerFileRepo struct {
@@ -45,6 +47,10 @@ func NewManagerFileRepo(psql *sqlx.DB) IFileRepo {
 	psqlRepo := NewPsqlFileRepo(psql)
 	diskFileRepo := NewDiskFileRepo()
 	return &managerFileRepo{psql: psqlRepo, disk: diskFileRepo}
+}
+
+func (r *managerFileRepo) GetEducationFilesByCourseId(courseId, userId int) ([]entity.GetFile, error) {
+	return r.psql.GetEducationFilesByCourseId(courseId, userId)
 }
 
 func (r *managerFileRepo) DeleteEducationFile(fileId int) error {

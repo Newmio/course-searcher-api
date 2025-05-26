@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма поиска</title>
+    <link rel="stylesheet" href="template/course/course_template.css">
+
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous">
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js"></script>
+</head>
+
+<body>
+
+    {{range .Courses}}
+    {{$strid := idForStr .Link}}
+    <div class="course">
+
+        <div class="course-img">
+            <img src="{{.IconLink}}" alt="course_image">
+        </div>
+
+        <div class="course-info">
+            <h3>{{.Name}}</h3>
+        </div>
+
+        <div class="course-common">
+            <div class="course-platform">Платформа: {{.Platform}}</div>
+            <div class="author">Автор: {{.Author}}</div>
+            <div class="fio">Студент: {{.StudentInfo}}</div>
+            {{ range .FileLinks }}
+                <li><a href="{{ . }}">{{ . }}</a></li>
+            {{ end }}
+            
+            <h5 id="{{$strid}}"></h5>
+            <div class="course-link">
+                <a style="color: white; background: #007bff; padding: 10px 15px; border-radius: 4px; text-decoration: none; display: inline-block;" href="{{.Link}}" class="btn-link">Страница курса</a> 
+
+                <form hx-post="/api/user/update/info" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" style="all: unset; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; margin-left: 20px;" >
+                    <input name="coins" type="number" placeholder="Балл за курс" value="" ></input>
+                    <button hx-get="/api/course/approve?link={{.Link}}" hx-headers='{"Accept": "text/html"}' hx-target="closest .course" hx-swap="delete" style="padding: 8px 12px; border: none; border-radius: 4px; background-color: #28a745; color: white; cursor: pointer;">Подтвердить курс</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {{end}}
+</body>
+
+</html>
