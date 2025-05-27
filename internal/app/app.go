@@ -119,7 +119,7 @@ func (app *App) initService() {
 	userHandler.InitUserRoutes(app.Echo, middlewares)
 
 	managerCourseRepo := repoCourse.NewManagerCourseRepo(app.Psql, app.Redis)
-	courseService := serviceCourse.NewCourseService(managerCourseRepo)
+	courseService := serviceCourse.NewCourseService(managerCourseRepo, managerUserRepo)
 	courseHandler := handlerCourse.NewHandler(courseService)
 	courseHandler.InitCourseRoutes(app.Echo, middlewares)
 

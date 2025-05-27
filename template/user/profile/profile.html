@@ -32,7 +32,7 @@
         <div class="sidebar">
             <form class="tabs" hx-headers='{"Content-Type": "application/json", "Accept": "text/html"}' hx-ext="json-enc" hx-target="#result">
                 <button hx-get="/api/course/get/by_user" hx-target="#result">Ваши курсы</button>
-                <button hx-get="/profile" hx-target="#result">Сертификаты</button>
+                <button hx-get="/api/course/get/checkstop" hx-target="#result">Сертификаты</button>
             </form>
         </div>
         

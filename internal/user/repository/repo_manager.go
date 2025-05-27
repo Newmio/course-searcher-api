@@ -18,6 +18,7 @@ type IUserRepo interface {
 	UpdateUserAvatar(userId int, avatar string) error
 	GetAllAdmins()([]entity.GetUser, error)
 	GetUsersByGroupName(group string)([]entity.GetUser, error)
+	GetCMSUsers() ([]entity.GetUser, error)
 }
 
 type IPsqlUserRepo interface {
@@ -32,6 +33,7 @@ type IPsqlUserRepo interface {
 	UpdateUserAvatar(userId int, avatar string) error
 	GetAllAdmins()([]entity.GetUser, error)
 	GetUsersByGroupName(group string)([]entity.GetUser, error)
+	GetCMSUsers() ([]entity.GetUser, error)
 }
 
 type managerUserRepo struct {
@@ -40,6 +42,10 @@ type managerUserRepo struct {
 
 func NewManagerUserRepo(psql *sqlx.DB) IUserRepo {
 	return &managerUserRepo{psql: NewPsqlUserRepo(psql)}
+}
+
+func (r *managerUserRepo) GetCMSUsers() ([]entity.GetUser, error){
+	return r.psql.GetCMSUsers()
 }
 
 func (r *managerUserRepo) GetUsersByGroupName(group string)([]entity.GetUser, error){

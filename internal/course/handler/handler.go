@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"searcher/internal/course/model/dto"
 	"searcher/internal/course/service"
+	"strconv"
+	"strings"
 
 	"github.com/Newmio/newm_helper"
 	"github.com/gorilla/websocket"
@@ -43,8 +47,10 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 				get.GET("/history", h.GetCoursesHistory)
 				get.GET("/check", h.GetCacheCheckCourses)
 				get.GET("/waiting", h.GetWaiting)
+				get.GET("/checkstop", h.GetCheckStop)
 			}
 
+			course.POST("/set/coins", h.SetCoins)
 			course.POST("/create", h.CreateCourse)
 			course.GET("/approve", h.ApproveCourse)
 			course.PUT("/update", h.UpdateCourse)
@@ -56,12 +62,64 @@ func (h *Handler) InitCourseRoutes(e *echo.Echo, middlewares map[string]echo.Mid
 	}
 }
 
-func BroadcastCourseEvent(message []byte) {
-	for _, client := range wsClients["course_event"] {
-		if err := client.WriteMessage(websocket.TextMessage, message); err != nil {
-			return
-		}
+type CoursesStopCheck struct {
+	Courses []service.CourseCheckStop
+}
+
+func (h *Handler) GetCheckStop(c echo.Context) error {
+	userId := c.Get("userId").(int)
+
+	cookie, err := c.Cookie("access")
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
 	}
+
+	token := strings.Split(cookie.Value, " ")
+
+	courses, err := h.s.GetCoursesCheckStop(userId, token[1])
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	resp := CoursesStopCheck{Courses: courses}
+
+	strHtml, err := newm_helper.RenderHtml("template/user/profile/course_templatecheckstop.html", resp)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.HTML(200, strHtml)
+}
+
+func (h *Handler) SetCoins(c echo.Context) error {
+	userId := c.Get("userId").(int)
+
+	studentId, err := strconv.Atoi(c.QueryParam("userid"))
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	body, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	coinsMap := make(map[string]interface{})
+
+	if err := json.Unmarshal(body, &coinsMap); err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	courseId, err := strconv.Atoi(c.QueryParam("courseid"))
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	if err := h.s.SetCourseCoins(courseId, studentId, userId, coinsMap); err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, nil)
 }
 
 func (h *Handler) GetWaiting(c echo.Context) error {

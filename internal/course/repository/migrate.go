@@ -32,6 +32,8 @@ func (r *psqlCourseRepo) initTables() error {
 		topic text default '',
 		date_start timestamp default now(),
 		date_end timestamp default now(),
+		credits int default 0,
+		educ_name text default '',
 		UNIQUE (id_user, id_course)
 	)`
 	_, err = r.psql.Exec(str)

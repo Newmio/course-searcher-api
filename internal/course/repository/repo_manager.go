@@ -32,6 +32,12 @@ type ICourseRepo interface {
 	GetWaitingCheckById(userId int) ([]string, error)
 	SetCheckCourseUser(courseId, userId int) error
 	GetCoursesForReport() (map[int][]entity.CourseList, error)
+	SetCourseCoins(courseId, studentId, userId, coins int, stopCheck bool, credits int, educName string) error
+	GetCourseUserCoins(courseId, userId int) (map[string]interface{}, error)
+	SumCoins(userId, courseId int) error
+	GetCoursesStopCheck(userId int) ([]entity.CourseList, error)
+	GetCourseById(id int) (entity.CourseList, error)
+	GetCourseUser(courseId, userId int)(map[string]interface{}, error)
 }
 
 type IKafkaCourseRepo interface {
@@ -48,6 +54,12 @@ type IPsqlCourseRepo interface {
 	CreateCourseUser(val map[string]interface{}) error
 	SetCheckCourseUser(courseId, userId int) error
 	GetCoursesForReport() (map[int][]entity.CourseList, error)
+	SetCourseCoins(courseId, studentId, userId, coins int, stopCheck bool, credits int, educName string) error
+	GetCourseUserCoins(courseId, userId int) (map[string]interface{}, error)
+	SumCoins(userId, courseId int) error
+	GetCoursesStopCheck(userId int) ([]entity.CourseList, error)
+	GetCourseById(id int) (entity.CourseList, error)
+	GetCourseUser(courseId, userId int)(map[string]interface{}, error)
 }
 
 type IRedisCourseRepo interface {
@@ -87,6 +99,30 @@ func NewManagerCourseRepo(psql *sqlx.DB, redis *redis.Client) ICourseRepo {
 		redis: NewRedisCourseRepo(redis),
 		http:  NewHttpCourseRepo(),
 	}
+}
+
+func (r *managerCourseRepo) GetCourseUser(courseId, userId int)(map[string]interface{}, error){
+	return r.psql.GetCourseUser(courseId, userId)
+}
+
+func (r *managerCourseRepo) GetCourseById(id int) (entity.CourseList, error){
+	return r.psql.GetCourseById(id)
+}
+
+func (r *managerCourseRepo) GetCoursesStopCheck(userId int) ([]entity.CourseList, error) {
+	return r.psql.GetCoursesStopCheck(userId)
+}
+
+func (r *managerCourseRepo) SumCoins(userId, courseId int) error{
+	return r.psql.SumCoins(userId, courseId)
+}
+
+func (r *managerCourseRepo) GetCourseUserCoins(courseId, userId int) (map[string]interface{}, error) {
+	return r.psql.GetCourseUserCoins(courseId, userId)
+}
+
+func (r *managerCourseRepo) SetCourseCoins(courseId, studentId, userId, coins int, stopCheck bool, credits int, educName string) error {
+	return r.psql.SetCourseCoins(courseId, studentId, userId, coins, stopCheck, credits, educName)
 }
 
 func (r *managerCourseRepo) GetCoursesForReport() (map[int][]entity.CourseList, error) {

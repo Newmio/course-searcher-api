@@ -31,6 +31,8 @@ func (h *Handler) InitFileRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 			{
 				get.GET("/foreport", h.GetCoursesForReport)
 			}
+
+			course.GET("/genreport", h.GenerateReport)
 		}
 
 		file := api.Group("/file")
@@ -64,12 +66,31 @@ func (h *Handler) InitFileRoutes(e *echo.Echo, middlewares map[string]echo.Middl
 		}
 	}
 
-	// e.GET("/test", h.Test)
+	e.GET("/test", h.Test)
 	// e.GET("/test2", h.Test2)
 }
 
 type CoursesForReport struct{
 	Courses []service.CourseForReport
+}
+
+func (h *Handler) GenerateReport(c echo.Context) error {
+	studentId, err := strconv.Atoi(c.QueryParam("student_id"))
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	courseId, err := strconv.Atoi(c.QueryParam("course_id"))
+	if err != nil {
+		return c.JSON(400, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	link, err := h.s.GetReport(studentId, courseId)
+	if err != nil {
+		return c.JSON(500, newm_helper.ErrorResponse(err.Error()))
+	}
+
+	return c.JSON(200, map[string]string{"link": link})
 }
 
 func (h *Handler) GetCoursesForReport(c echo.Context) error {

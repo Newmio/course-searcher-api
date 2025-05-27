@@ -104,6 +104,20 @@ func (r *psqlFileRepo) GetEducationFilesByCourseId(courseId, userId int) ([]enti
 	return files, nil
 }
 
+func (r *psqlFileRepo) GetReportUser(userId, courseId int) (int, error) {
+	var id int
+
+	str := `select id_report_file from report_file_user where id_user = $1 and id_course = $2`
+
+	if err := r.db.Get(&id, str, userId, courseId); err != nil {
+		if err != sql.ErrNoRows {
+			return 0, newm_helper.Trace(err, str)
+		}
+	}
+
+	return id, nil
+}
+
 func (r *psqlFileRepo) GetEducationFilesByUserId(userId int) ([]entity.GetFile, error) {
 	var fileUser []entity.GetEducationFileUser
 	var files []entity.GetFile

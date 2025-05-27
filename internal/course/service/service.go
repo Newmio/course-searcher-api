@@ -1,11 +1,17 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"searcher/internal/course/model/dto"
 	"searcher/internal/course/model/entity"
 	"searcher/internal/course/repository"
+	"strconv"
 	"strings"
+
+	repoUser "searcher/internal/user/repository"
 
 	"github.com/Newmio/newm_helper"
 	"github.com/PuerkitoBio/goquery"
@@ -56,26 +62,143 @@ type ICourseService interface {
 	GetCacheCheckCourses() (dto.CourseListResponse, error)
 	CreateApproveCourse(link string) error
 	GetWaitingCheckById(userId int) (dto.CourseListResponse, error)
-	// это худший проект в моей жизни 
+	SetCourseCoins(courseId, studentId, userId int, coins map[string]interface{}) error
+	GetCoursesCheckStop(userId int, token string) ([]CourseCheckStop, error)
+	// это худший проект в моей жизни
 	// написанный на коленке без соблюдения любых архитектурных принципов
 	// в этом коде нету логики
 }
 
 type courseService struct {
-	r repository.ICourseRepo
+	r     repository.ICourseRepo
+	rUser repoUser.IUserRepo
 }
 
-func NewCourseService(r repository.ICourseRepo) ICourseService {
-	return &courseService{r: r}
+func NewCourseService(r repository.ICourseRepo, rUser repoUser.IUserRepo) ICourseService {
+	return &courseService{r: r, rUser: rUser}
 }
 
-// func (s *courseService) CreateAdminSubmitEvent(link string)error{
-// 	course, err := s.r.GetCourseByLink(link)
-// 	if err != nil{
-// 		return newm_helper.Trace(err)
-// 	}
+type CourseCheckStop struct {
+	Link     string
+	IconLink string
+	Name     string
+	DocLink  string
+	Platform string
+	Author   string
+}
 
-// }
+func (s *courseService) GetCoursesCheckStop(userId int, token string) ([]CourseCheckStop, error) {
+	var resp []CourseCheckStop
+
+	courses, err := s.r.GetCoursesStopCheck(userId)
+	if err != nil {
+		return nil, newm_helper.Trace(err)
+	}
+
+	for _, v := range courses {
+		var c CourseCheckStop
+
+		c.Link = v.Link
+		c.IconLink = v.IconLink
+		c.Name = v.Name
+		c.Platform = v.Platform
+		c.Author = v.Author
+
+		req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:8088/api/course/genreport?course_id=%d&student_id=%d", v.Id, userId), nil)
+		if err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		client := &http.Client{}
+
+		reqResp, err := client.Do(req)
+		if err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+		defer reqResp.Body.Close()
+
+		body, err := io.ReadAll(reqResp.Body)
+		if err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		mapResp := make(map[string]interface{})
+
+		err = json.Unmarshal(body, &mapResp)
+		if err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+
+		c.DocLink = mapResp["link"].(string)
+
+		resp = append(resp, c)
+	}
+
+	return resp, nil
+}
+
+func (s *courseService) SetCourseCoins(courseId, studentId, userId int, coins map[string]interface{}) error {
+	userInfo, err := s.rUser.GetUserInfo(userId)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	if userInfo.Proffession != "cms" {
+		return nil
+	}
+
+	var stopCheck bool
+
+	cmsUsers, err := s.rUser.GetCMSUsers()
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	coinsMap, err := s.r.GetCourseUserCoins(courseId, studentId)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	if _, ok := coinsMap["res"]; !ok {
+		if len(coinsMap) >= len(cmsUsers)-1 {
+			stopCheck = true
+		}
+	}
+
+	c, err := strconv.Atoi(coins["coins"].(string))
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	var credits int
+
+	if v, ok := coins["credits"]; ok{
+		credits, err = strconv.Atoi(v.(string))
+		if err != nil {
+			return newm_helper.Trace(err)
+		}
+	}
+
+	var educName string
+
+	if v, ok := coins["educ_name"]; ok{
+		educName = v.(string)
+	}
+
+	err = s.r.SetCourseCoins(courseId, studentId, userId, c, stopCheck, credits, educName)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	err = s.r.SumCoins(studentId, courseId)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	return nil
+}
 
 func (s *courseService) GetWaitingCheckById(userId int) (dto.CourseListResponse, error) {
 	links, err := s.r.GetWaitingCheckById(userId)

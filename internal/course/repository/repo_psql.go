@@ -2,8 +2,10 @@ package repository
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"searcher/internal/course/model/entity"
+	"strconv"
 	"strings"
 
 	"github.com/Newmio/newm_helper"
@@ -20,6 +22,192 @@ func NewPsqlCourseRepo(psql *sqlx.DB) IPsqlCourseRepo {
 		panic(err)
 	}
 	return r
+}
+
+func (r *psqlCourseRepo) GetCourseUser(courseId, userId int) (map[string]interface{}, error) {
+	resp := make(map[string]interface{})
+
+	str := `select * from course_user where id_user = $1 and id_course = $2`
+
+	rows, err := r.psql.Queryx(str, userId, courseId)
+	if err != nil {
+		return nil, newm_helper.Trace(err, str)
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		result := make(map[string]interface{})
+
+		if err := rows.MapScan(result); err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+		return result, nil
+	}
+
+	return resp, nil
+}
+
+func (r *psqlCourseRepo) GetCoursesStopCheck(userId int) ([]entity.CourseList, error) {
+	var courses []entity.CourseList
+	var ids []int
+
+	str := `select id_course from course_user where id_user = $1 and topic = 'stop'`
+
+	if err := r.psql.Select(&ids, str, userId); err != nil {
+		return nil, newm_helper.Trace(err, str)
+	}
+
+	for _, v := range ids {
+		course, err := r.GetCourseById(v)
+		if err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+		courses = append(courses, course)
+	}
+
+	return courses, nil
+}
+
+func (r *psqlCourseRepo) SumCoins(userId, courseId int) error {
+	str := `select name from course_user where id_user = $1 and id_course = $2 and topic = 'stop'`
+
+	var name string
+
+	if err := r.psql.QueryRow(str, userId, courseId).Scan(&name); err != nil {
+		if err != sql.ErrNoRows {
+			return newm_helper.Trace(err, str)
+		}
+	}
+
+	resp := make(map[string]interface{})
+
+	if name != "" {
+		err := json.Unmarshal([]byte(name), &resp)
+		if err != nil {
+			return newm_helper.Trace(err)
+		}
+	}
+
+	newCoins := make(map[string]interface{})
+	var sum int
+
+	for _, v := range resp {
+		sum += int(v.(float64))
+	}
+
+	if sum == 0 {
+		return nil
+	}
+
+	newCoins["res"] = sum / len(resp)
+
+	body, err := json.Marshal(newCoins)
+	if err != nil {
+		return newm_helper.Trace(err)
+	}
+
+	str = `update course_user set name = $1 where id_user = $2 and id_course = $3 and topic = 'stop'`
+
+	_, err = r.psql.Exec(str, string(body), userId, courseId)
+	if err != nil {
+		return newm_helper.Trace(err, str)
+	}
+
+	return nil
+}
+
+func (r *psqlCourseRepo) GetCourseUserCoins(courseId, userId int) (map[string]interface{}, error) {
+	str := `select name from course_user where id_user = $1 and id_course = $2 and topic = 'check'`
+
+	var name string
+
+	if err := r.psql.QueryRow(str, userId, courseId).Scan(&name); err != nil {
+		if err != sql.ErrNoRows {
+			return nil, newm_helper.Trace(err, str)
+		}
+	}
+
+	resp := make(map[string]interface{})
+
+	if name != "" {
+		err := json.Unmarshal([]byte(name), &resp)
+		if err != nil {
+			return nil, newm_helper.Trace(err)
+		}
+	}
+
+	return resp, nil
+}
+
+func (r *psqlCourseRepo) SetCourseCoins(courseId, studentId, userId, coins int, stopCheck bool, credits int, educName string) error {
+	str := `select name from course_user where id_user = $1 and id_course = $2 and topic = 'check'`
+
+	var name string
+
+	if err := r.psql.QueryRow(str, studentId, courseId).Scan(&name); err != nil {
+		if err != sql.ErrNoRows {
+			return newm_helper.Trace(err, str)
+		}
+	}
+
+	resp := make(map[string]interface{})
+
+	if name != "" {
+		err := json.Unmarshal([]byte(name), &resp)
+		if err != nil {
+			return newm_helper.Trace(err)
+		}
+	}
+
+	if _, ok := resp["res"]; ok {
+		str = `update course_user set topic = 'stop', date_end = now() where id_user = $2 and id_course = $3 and topic = 'check'`
+
+		_, err := r.psql.Exec(str, studentId, courseId)
+		if err != nil {
+			return newm_helper.Trace(err, str)
+		}
+
+		return nil
+	}
+
+	resp[strconv.Itoa(userId)] = coins
+
+	if credits > 0 && educName != "" {
+		str = `update course_user set name = $1, credits = $2, educ_name = $3 where id_user = $4 and id_course = $5 and topic = 'check'`
+
+		body, err := json.Marshal(resp)
+		if err != nil {
+			return newm_helper.Trace(err)
+		}
+
+		_, err = r.psql.Exec(str, string(body), credits, educName, studentId, courseId)
+		if err != nil {
+			return newm_helper.Trace(err, str)
+		}
+	}else{
+		str = `update course_user set name = $1 where id_user = $2 and id_course = $3 and topic = 'check'`
+
+		body, err := json.Marshal(resp)
+		if err != nil {
+			return newm_helper.Trace(err)
+		}
+
+		_, err = r.psql.Exec(str, string(body), studentId, courseId)
+		if err != nil {
+			return newm_helper.Trace(err, str)
+		}
+	}
+
+	if stopCheck {
+		str = `update course_user set topic = 'stop' where id_user = $1 and id_course = $2 and topic = 'check'`
+
+		_, err := r.psql.Exec(str, studentId, courseId)
+		if err != nil {
+			return newm_helper.Trace(err, str)
+		}
+	}
+
+	return nil
 }
 
 func (r *psqlCourseRepo) GetCoursesForReport() (map[int][]entity.CourseList, error) {

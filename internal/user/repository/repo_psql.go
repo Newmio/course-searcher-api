@@ -21,6 +21,31 @@ func NewPsqlUserRepo(db *sqlx.DB) IPsqlUserRepo {
 	return r
 }
 
+func (r *psqlUserRepo) GetCMSUsers() ([]entity.GetUser, error) {
+	var users []entity.GetUser
+	var ids []int
+
+	str := `select id_user from user_info where proffession = 'cms'`
+
+	if err := r.db.Select(&ids, str); err != nil {
+		return nil, newm_helper.Trace(err, str)
+	}
+
+	for _, value := range ids {
+		var user entity.GetUser
+
+		str = `select * from users where id = $1`
+
+		if err := r.db.Get(&user, str, value); err != nil {
+			return nil, newm_helper.Trace(err, str)
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
 func (r *psqlUserRepo) GetUsersByGroupName(group string)([]entity.GetUser, error){
 	var users []entity.GetUser
 	var id []int
